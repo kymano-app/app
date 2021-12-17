@@ -20,53 +20,51 @@ on:
         required: true
         default: 'false'
 
+
 jobs:
-  build:
-    name: Build
-    runs-on: macos-11
-    strategy:
-      matrix:
-        arch: [arm64]
-        platform: [macos]
+  try-macos-arm64:
+    name: Try macOS on M1
+    runs-on: [self-hosted, macOS, ARM64]
+    defaults:
+      run:
+        shell: "/usr/bin/arch -arch arm64e /bin/bash {0}"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+        - name: Status
+          run: |
+            clang --version
+            uname -a
+        - name: Checkout
+          uses: actions/checkout@v2
+        - name: Set Ruby metadata
+          id: ruby
+          run: |
+              ruby -e 'puts RUBY_PLATFORM' | tee ruby_platform
+              echo "::set-output name=RUBY_PLATFORM::$(cat ruby_platform)"
+              ruby -e 'puts Gem.platforms.last.to_s' | tee gem_platform
+              echo "::set-output name=GEM_PLATFORM::$(cat gem_platform)"
+        - name: Install better-sqlite3
+          run: |
+            git clone https://github.com/JoshuaWise/better-sqlite3 && \
+            cd better-sqlite3 && \
+            npm install --ignore-scripts && \
+            npx prebuild -r electron -t 16.0.4
+            mkdir ../
+            cp prebuild/* ../prebuilds/
 
-      - name: Setup Xcode
-        shell: bash
-        run: sudo xcode-select -switch /Applications/Xcode_13.1.app
+        - name: Install dependencies
+          run: |
+            npm install
 
-      - name: Setup Path
-        shell: bash
-        run: |
-          echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-
-      - name: Install better-sqlite3
-        run: |
-          git clone https://github.com/JoshuaWise/better-sqlite3 && \
-          cd better-sqlite3 && \
-          npm install --ignore-scripts && \
-          npx prebuild -r electron -t 16.0.4
-          mkdir ../
-          cp prebuild/* ../prebuilds/
-
-      - name: Install dependencies
-        run: |
-          npm install
-
-      - name: Publish releases
-        env:
-          # These values are used for auto updates signing
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # This is used for uploading release assets to github
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run postinstall
-          npm run build
-          npm exec electron-builder -- --publish always --win --mac --linux
+        - name: Publish releases
+          env:
+            # These values are used for auto updates signing
+            APPLE_ID: ${{ secrets.APPLE_ID }}
+            APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+            CSC_LINK: ${{ secrets.CSC_LINK }}
+            CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+            # This is used for uploading release assets to github
+            # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            npm run postinstall
+            npm run build
+            npm exec electron-builder -- --publish always --win --mac --linux

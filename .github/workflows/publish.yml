@@ -6,7 +6,8 @@ on:
       - master
 
 jobs:
-  publish:
+  build:
+    name: Build electron
     runs-on: macos-11
 
     strategy:
@@ -29,7 +30,6 @@ jobs:
           cd better-sqlite3 && \
           npm install --ignore-scripts && \
           npx prebuild  -r electron -t 16.0.4
-          cp prebuilds/better-sqlite3-v7.4.5-electron-v99-darwin-arm64.tar.gz /Users/runner/.npm/_prebuilds/dad20d-better-sqlite3-v7.4.5-electron-v99-darwin-arm64.tar.gz
           cp prebuilds/* ../prebuilds/
 
       - name: Install dependencies

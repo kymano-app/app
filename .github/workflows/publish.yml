@@ -26,16 +26,13 @@ jobs:
     runs-on: macos-11
     strategy:
       matrix:
-        arch: [arm64]
+        arch: [arm64, x86_64]
         platform: [macos]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: ls
-        run: |
-          ls -lta
 
       - name: Install dependencies
         run: |

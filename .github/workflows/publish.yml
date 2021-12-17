@@ -37,18 +37,15 @@ jobs:
         shell: bash
         run: sudo xcode-select -switch /Applications/Xcode_13.1.app
 
-      - name: Install Node and NPM
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
-
       - name: Install better-sqlite3
         run: |
+          brew install npm@16
+          npm install -g npx
           git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \
           npm install --ignore-scripts && \
           npx prebuild  -r electron -t 16.0.4
-          cp prebuilds/* ../prebuilds/
+          cp prebuild/* ../prebuilds/
 
       - name: Install dependencies
         run: |

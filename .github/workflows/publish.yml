@@ -11,6 +11,7 @@ jobs:
 
     strategy:
       matrix:
+        arch: [arm64]
         os: [macos-latest]
 
     steps:

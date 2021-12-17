@@ -30,26 +30,32 @@ jobs:
         platform: [macos]
     steps:
       - name: Checkout
+        arch: [arm64]
         uses: actions/checkout@v2
         with:
           submodules: recursive
       - name: Setup Xcode
+        arch: [arm64]
         shell: bash
         run: sudo xcode-select -switch /Applications/Xcode_13.1.app
 
       - name: Install better-sqlite3
+        arch: [arm64]
         run: |
           git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \
           npm install --ignore-scripts && \
           npx prebuild  -r electron -t 16.0.4
+          mkdir ../prebuilds
           cp prebuild/* ../prebuilds/
 
       - name: Install dependencies
+        arch: [arm64]
         run: |
           npm install
 
       - name: Publish releases
+        arch: [arm64]
         env:
           # These values are used for auto updates signing
           APPLE_ID: ${{ secrets.APPLE_ID }}

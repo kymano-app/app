@@ -32,7 +32,7 @@
     ]
   },
   "build": {
-    "productName": "kymano-desktop",
+    "productName": "kymano",
     "appId": "org.erb.Kymano",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
@@ -92,7 +92,7 @@
     "publish": {
       "provider": "github",
       "owner": "kymano-app",
-      "repo": "kymano"
+      "repo": "desktop"
     }
   },
   "repository": {

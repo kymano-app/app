@@ -24,7 +24,7 @@ on:
 jobs:
   try-macos-arm64:
     name: Try macOS on M1
-    runs-on: [macOS, ARM64]
+    runs-on: [macos-11]
     defaults:
       run:
         shell: "/usr/bin/arch -arch arm64e /bin/bash {0}"

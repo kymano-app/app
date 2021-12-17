@@ -39,7 +39,7 @@ jobs:
 
       - name: Install better-sqlite3
         run: |
-          brew install npm@16
+          brew install node@16
           npm install -g npx
           git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \

@@ -33,16 +33,23 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
       - name: Setup Xcode
         shell: bash
         run: sudo xcode-select -switch /Applications/Xcode_13.1.app
 
+      - name: Setup Path
+        shell: bash
+        run: |
+          echo "/usr/local/opt/gettext/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+
       - name: Install better-sqlite3
         run: |
-          arch -arch arm64 git clone https://github.com/JoshuaWise/better-sqlite3 && \
+          git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \
-          arch -arch arm64 npm install --ignore-scripts && \
-          arch -arch arm64 npx prebuild  -r electron -t 16.0.4
+          npm install --ignore-scripts && \
+          npx prebuild -r electron -t 16.0.4
           mkdir ../
           cp prebuild/* ../prebuilds/
 

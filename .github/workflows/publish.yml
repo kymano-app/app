@@ -34,6 +34,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: xquartz
+        run: |
+          wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
+          hdiutil attach XQuartz-2.8.1.dmg
+          cp /Volumes/XQuartz-2.8.1/XQuartz.pkg ./release/app/base/
+
       - name: Install dependencies
         run: |
           npm install

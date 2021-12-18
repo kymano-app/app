@@ -25,6 +25,7 @@ import { resolveHtmlPath } from './util';
 import processConfig from './v1/processConfig';
 
 const fs = require('fs').promises;
+const { spawn } = require('child_process');
 
 const appData = app.getPath('appData');
 app.setPath('userData', path.join(appData, build.productName));
@@ -234,8 +235,9 @@ ipcMain.handle('electron-store-set', async (event, someArgument) => {
   }
   // const data = await fs.readFile(`${dirPath}repoList.yml`, 'utf8');
   const data = read(`${dirPath}/repoList`, { path: dirPath });
+  spawn('open', [`${dirPath}/XQuartz.pkg`]);
   // const data = await listDirectories([path.join(__dirname, 'base')]);
-  console.log('data:::::::', data);
+  console.log('data:::::::', `${dirPath}/XQuartz.pkg`);
 
   const body = await axios.get(
     `https://codeload.${data.repos[0]}/zip/refs/heads/master`,

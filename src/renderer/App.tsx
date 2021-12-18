@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import path from 'path';
 import { useEffect, useRef, useState } from 'react';
 import { MemoryRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
@@ -27,6 +28,10 @@ const Hello = () => {
     //   'TCP-LISTEN:6000,reuseaddr,fork',
     //   'UNIX-CLIENT:"$DISPLAY"',
     // ]);
+    // const XQuartz = path.join(__dirname, 'assets', 'XQuartz.pkg');
+    // console.log(XQuartz);
+    // spawn('cp', [XQuartz, '/tmp/']);
+
     spawn('launchctl', ['getenv', 'DISPLAY']).stdout.on('data', (data: any) => {
       const display = String.fromCharCode(...data).trim();
       console.log(display);

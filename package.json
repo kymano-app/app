@@ -1,6 +1,6 @@
 {
   "name": "kymano",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Alex Braine",
   "description": "QEMU FE for Mac, Linux, Win. x86-64 and AArch64. [Early Aplha]",
   "scripts": {

@@ -78,7 +78,10 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage",
+        "deb",
+        "rpm",
+        "freebsd"
       ],
       "category": "Development"
     },

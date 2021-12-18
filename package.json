@@ -77,14 +77,16 @@
       ]
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "arch": [
-        "arm64",
-        "x64"
-      ],
+      "target": {
+        "target": [
+          "AppImage",
+          "deb"
+        ],
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
       "category": "Development"
     },
     "directories": {

@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  prebuild-better-sqlite3:
+  prebuild-linux-better-sqlite3:
     name: Prebuild linux/arm64 better-sqlite3
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
           name: better-sqlite3
           path: prebuilds
 
-  publish:
+  publish-mac:
     name: publish
     needs: [prebuild-better-sqlite3]
     runs-on: macos-11
@@ -111,5 +111,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            release/build/*.*
+            release/build/*.zip
+            release/build/*.dmg
+            release/build/*.blockmap
+            release/build/latest-mac.yml
           prerelease: true

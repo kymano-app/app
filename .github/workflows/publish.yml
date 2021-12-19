@@ -12,13 +12,17 @@ jobs:
     steps:
       - uses: docker/setup-qemu-action@v1
       - run: |
-          docker run --rm --entrypoint /bin/sh --platform linux/arm64 node:16-alpine -c "apk add build-base git python3 --update-cache && \
+          docker run --entrypoint /bin/sh --platform --name better_sqlite3 linux/arm64 node:16-alpine -c "apk add build-base git python3 --update-cache && \
           git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \
           npm install --ignore-scripts && \
-          npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$' && \
-          ls -l prebuild"
-
+          npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$'"
+          docker cp better_sqlite3:/better-sqlite3/prebuilds ./
+      - name: Upload better-sqlite3
+        uses: actions/upload-artifact@v2
+        with:
+          name: better-sqlite3
+          path: prebuilds
   publish:
     runs-on: macos-11
 
@@ -30,6 +34,12 @@ jobs:
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v2
+
+     - name: Download better_sqlite3
+        uses: actions/download-artifact@v2
+        with:
+          name: Sysroot-macos-arm64
+          path: Sysroot-1
 
       - name: Install Node and NPM
         uses: actions/setup-node@v2

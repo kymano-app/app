@@ -16,7 +16,6 @@ jobs:
         with:
           path: prebuilds
           key: 2-better-sqlite3-arm-linux
-      - run: ls -l prebuilds
       - name: setup-qemu-action
         if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
         uses: docker/setup-qemu-action@v1

@@ -111,8 +111,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            release/build/kymano-*-arm64-mac.zip
-            release/build/kymano-*-arm64.dmg
-            release/build/kymano-*.dmg
-            release/build/kymano-*-mac.zip
+            release/build/*.*
           prerelease: true

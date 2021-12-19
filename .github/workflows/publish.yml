@@ -36,7 +36,7 @@ jobs:
 
   publish-mac:
     name: publish
-    needs: [prebuild-better-sqlite3]
+    needs: [prebuild-linux-better-sqlite3]
     runs-on: macos-11
 
     strategy:

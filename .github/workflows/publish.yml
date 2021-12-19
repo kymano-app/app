@@ -94,6 +94,15 @@ jobs:
         with:
           node-version: 16
 
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install dependencies
         run: |
           npm install
@@ -111,4 +120,4 @@ jobs:
             ls -l prebuilds
             npm run postinstall
             npm run build
-            npm exec electron-builder -- --publish always --win --mac --linux
+            npm exec electron-builder -- --publish always --mac

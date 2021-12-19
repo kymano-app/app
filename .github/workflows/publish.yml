@@ -8,7 +8,7 @@ on:
 jobs:
   prebuild-xquartz:
     name: Prebuild on arm64 alpine
-    runs-on: ubuntu-latest
+    runs-on: macos-11
     steps:
       - name: Cache xquartz
         id: cache-xquartz

@@ -6,21 +6,19 @@ on:
       - master
 
 jobs:
-  build:
-    runs-on: debian
-
-    strategy:
-      matrix:
-        platform: [linux]
-        arch: [arm64]
-
+  prebuild-arm64-alpine:
+    name: Prebuild on arm64 alpine
+    runs-on: ubuntu-latest
+    needs: publish
     steps:
-      - name: better-sqlite3
-        run: |
+      - uses: docker/setup-qemu-action@v1
+      - run: |
+          docker run --rm --entrypoint /bin/sh --platform linux/arm64 node:16-alpine -c "apk add build-base git python3 --update-cache && \
           git clone https://github.com/JoshuaWise/better-sqlite3 && \
           cd better-sqlite3 && \
           npm install --ignore-scripts && \
-          npx prebuild  -r electron -t 16.0.4
+          npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$' && \
+          ls -l prebuild"
 
   publish:
     runs-on: macos-11

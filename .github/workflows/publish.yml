@@ -29,11 +29,11 @@ jobs:
             npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$'"
             docker cp better_sqlite3:/better-sqlite3/prebuilds ./
       - name: Upload better-sqlite3
-        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v2
         with:
           name: better-sqlite3
           path: prebuilds
+      - run: ls -l
 
   publish:
     name: publish

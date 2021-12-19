@@ -16,9 +16,6 @@ jobs:
         with:
           path: release/app/base
           key: xquartz-2.8.1
-      - name: setup-qemu-action
-        if: steps.cache-xquartz.outputs.cache-hit != 'true'
-        uses: docker/setup-qemu-action@v1
       - name: get xquartz
         if: steps.cache-xquartz.outputs.cache-hit != 'true'
         run: |

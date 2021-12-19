@@ -10,13 +10,13 @@ jobs:
     name: Prebuild on arm64 alpine
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Cache better-sqlite3
         id: cache-better-sqlite3
         uses: actions/cache@v2
         with:
-          path: better-sqlite3
-          key: 1-better-sqlite3-arm-linux
+          path: prebuilds
+          key: 2-better-sqlite3-arm-linux
+      - run: ls -l prebuilds
       - name: setup-qemu-action
         if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
         uses: docker/setup-qemu-action@v1

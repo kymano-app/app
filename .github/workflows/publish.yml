@@ -19,8 +19,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: Release.txt
-          
+          files: build/
+
   prebuild-better-sqlite3:
     name: Prebuild linux/arm64 better-sqlite3
     runs-on: ubuntu-latest
@@ -119,4 +119,10 @@ jobs:
             ls -l prebuilds
             npm run postinstall
             npm run build
-            npm exec electron-builder -- --publish always --mac
+            npm exec electron-builder -- --publish never --mac
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release/build/

@@ -37,7 +37,7 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
-     - name: Download better_sqlite3
+      - name: Download better_sqlite3
         uses: actions/download-artifact@v2
         with:
           name: Sysroot-macos-arm64

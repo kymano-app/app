@@ -6,21 +6,6 @@ on:
       - "v*.*.*"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build
-        run: echo ${{ github.sha }} > Release.txt
-      - name: Test
-        run: cat Release.txt
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: build/
-
   prebuild-better-sqlite3:
     name: Prebuild linux/arm64 better-sqlite3
     runs-on: ubuntu-latest
@@ -125,4 +110,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: release/build/
+          files: |
+            kymano-*-arm64-mac.zip
+            kymano-*-arm64.dmg
+            kymano-*.dmg
+            kymano-*-mac.zip
+          prerelease: true

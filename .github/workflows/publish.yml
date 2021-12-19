@@ -16,7 +16,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: better-sqlite3
-          key: better-sqlite3-arm-linux
+          key: 1-better-sqlite3-arm-linux
       - name: setup-qemu-action
         if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
         uses: docker/setup-qemu-action@v1

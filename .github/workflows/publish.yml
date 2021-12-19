@@ -10,8 +10,18 @@ jobs:
     name: Prebuild on arm64 alpine
     runs-on: ubuntu-latest
     steps:
-      - uses: docker/setup-qemu-action@v1
-      - run: |
+      - name: Cache better-sqlite3
+        id: cache-better-sqlite3
+        uses: actions/cache@v2
+        with:
+          path: better-sqlite3
+          key: better-sqlite3-arm-linux
+      - name: setup-qemu-action
+        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
+        uses: docker/setup-qemu-action@v1
+      - name: build better-sqlite3
+        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
+        run: |
             docker run --entrypoint /bin/sh --name better_sqlite3 --platform linux/arm64 node:16-alpine -c "apk add build-base git python3 --update-cache && \
             git clone https://github.com/JoshuaWise/better-sqlite3 && \
             cd better-sqlite3 && \
@@ -19,6 +29,7 @@ jobs:
             npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$'"
             docker cp better_sqlite3:/better-sqlite3/prebuilds ./
       - name: Upload better-sqlite3
+        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v2
         with:
           name: better-sqlite3

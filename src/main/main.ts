@@ -525,7 +525,7 @@ const createWindow = async () => {
   });
 
   const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
-    mainWindow.webContents.toggleDevTools();
+    mainWindow!.webContents.toggleDevTools();
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

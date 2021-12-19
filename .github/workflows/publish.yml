@@ -18,13 +18,16 @@ jobs:
             npm install --ignore-scripts && \
             npx --no-install prebuild -r electron -t 16.0.4 --include-regex 'better_sqlite3.node$'"
             docker cp better_sqlite3:/better-sqlite3/prebuilds ./
+            ls -l prebuilds
       - name: Upload better-sqlite3
         uses: actions/upload-artifact@v2
         with:
           name: better-sqlite3
           path: prebuilds
+
   publish:
     name: publish
+    needs: prebuild-arm64-alpine
     runs-on: macos-11
 
     strategy:
@@ -39,8 +42,8 @@ jobs:
       - name: Download better_sqlite3
         uses: actions/download-artifact@v2
         with:
-          name: Sysroot-macos-arm64
-          path: Sysroot-1
+          name: better-sqlite3
+          path: prebuilds
 
       - name: Install Node and NPM
         uses: actions/setup-node@v2
@@ -49,6 +52,7 @@ jobs:
 
       - name: xquartz
         run: |
+          ls -l prebuilds
           wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
           hdiutil attach XQuartz-2.8.1.dmg
           cp /Volumes/XQuartz-2.8.1/XQuartz.pkg ./release/app/base/

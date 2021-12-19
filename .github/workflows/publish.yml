@@ -6,30 +6,6 @@ on:
       - master
 
 jobs:
-  prebuild-xquartz:
-    name: Prebuild on arm64 alpine
-    runs-on: macos-11
-    steps:
-      - name: Cache xquartz
-        id: cache-xquartz
-        uses: actions/cache@v2
-        with:
-          path: release/app/base
-          key: xquartz-2.8.1
-      - name: get xquartz
-        if: steps.cache-xquartz.outputs.cache-hit != 'true'
-        run: |
-            wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
-            hdiutil attach XQuartz-2.8.1.dmg
-            mkdir -p ./release/app/base/
-            cp /Volumes/XQuartz-2.8.1/XQuartz.pkg ./release/app/base/
-            ls -l ./release/app/base/
-      - name: Upload xquartz
-        uses: actions/upload-artifact@v2
-        with:
-          name: xquartz
-          path: release/app/base
-
   prebuild-better-sqlite3:
     name: Prebuild on arm64 alpine
     runs-on: ubuntu-latest
@@ -60,7 +36,7 @@ jobs:
 
   publish:
     name: publish
-    needs: [prebuild-better-sqlite3, prebuild-xquartz]
+    needs: [prebuild-better-sqlite3]
     runs-on: macos-11
 
     strategy:
@@ -72,11 +48,21 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
-      - name: Download xquartz
-        uses: actions/download-artifact@v2
+      - name: Cache xquartz
+        id: cache-xquartz
+        uses: actions/cache@v2
         with:
-          name: xquartz
           path: release/app/base
+          key: xquartz-2.8.1
+
+      - name: Download xquartz
+        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
+        run: |
+            wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
+            hdiutil attach XQuartz-2.8.1.dmg
+            mkdir -p ./release/app/base/
+            cp /Volumes/XQuartz-2.8.1/XQuartz.pkg ./release/app/base/
+            ls -l ./release/app/base/
 
       - name: Download better_sqlite3
         uses: actions/download-artifact@v2
@@ -85,8 +71,6 @@ jobs:
           path: prebuilds
 
       - run: |
-          ls -l prebuilds
-          ls -l release/app/base
           mv prebuilds/better-sqlite3-v7.4.5-electron-v99-linuxmusl-arm64.tar.gz prebuilds/better-sqlite3-v7.4.5-electron-v99-linux-arm64.tar.gz
 
       - name: Install Node and NPM

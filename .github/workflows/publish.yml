@@ -25,6 +25,7 @@ jobs:
           name: better-sqlite3
           path: prebuilds
   publish:
+    name: publish
     runs-on: macos-11
 
     strategy:

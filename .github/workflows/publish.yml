@@ -6,6 +6,22 @@ on:
       - master
 
 jobs:
+  build:
+    runs-on: debian
+
+    strategy:
+      matrix:
+        platform: [linux]
+        arch: [arm64]
+
+    steps:
+      - name: better-sqlite3
+        run: |
+          git clone https://github.com/JoshuaWise/better-sqlite3 && \
+          cd better-sqlite3 && \
+          npm install --ignore-scripts && \
+          npx prebuild  -r electron -t 16.0.4
+
   publish:
     runs-on: macos-11
 

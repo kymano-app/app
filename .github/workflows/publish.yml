@@ -52,6 +52,7 @@ jobs:
 
       - name: xquartz
         run: |
+          mv prebuilds/better-sqlite3-v7.4.5-electron-v99-linuxmusl-arm64.tar.gz prebuilds/better-sqlite3-v7.4.5-electron-v99-linux-arm64.tar.gz
           ls -l prebuilds
           wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
           hdiutil attach XQuartz-2.8.1.dmg

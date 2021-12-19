@@ -76,7 +76,6 @@
         {
           "target": "nsis",
           "arch": [
-            "arm64",
             "x64"
           ]
         }
@@ -87,22 +86,8 @@
         {
           "target": "deb",
           "arch": [
-            "arm64",
-            "x64"
-          ]
-        },
-        {
-          "target": "rpm",
-          "arch": [
-            "arm64",
-            "x64"
-          ]
-        },
-        {
-          "target": "freebsd",
-          "arch": [
-            "arm64",
-            "x64"
+            "x64",
+            "arm64"
           ]
         }
       ],

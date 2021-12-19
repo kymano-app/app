@@ -10,6 +10,7 @@ jobs:
     name: Prebuild on arm64 alpine
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Cache better-sqlite3
         id: cache-better-sqlite3
         uses: actions/cache@v2
@@ -33,7 +34,7 @@ jobs:
         with:
           name: better-sqlite3
           path: prebuilds
-      - run: ls -l
+      - run: ls -l prebuilds
 
   publish:
     name: publish

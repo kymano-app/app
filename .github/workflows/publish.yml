@@ -9,7 +9,6 @@ jobs:
   prebuild-arm64-alpine:
     name: Prebuild on arm64 alpine
     runs-on: ubuntu-latest
-    needs: publish
     steps:
       - uses: docker/setup-qemu-action@v1
       - run: |

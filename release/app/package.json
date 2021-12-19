@@ -1,6 +1,6 @@
 {
   "name": "kymano",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "main": "./dist/main/main.js",
   "author": {

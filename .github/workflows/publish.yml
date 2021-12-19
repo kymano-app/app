@@ -56,7 +56,7 @@ jobs:
           key: xquartz-2.8.1
 
       - name: Download xquartz
-        if: steps.cache-better-sqlite3.outputs.cache-hit != 'true'
+        if: steps.cache-xquartz.outputs.cache-hit != 'true'
         run: |
             wget https://github.com/XQuartz/XQuartz/releases/download/XQuartz-2.8.1/XQuartz-2.8.1.dmg
             hdiutil attach XQuartz-2.8.1.dmg

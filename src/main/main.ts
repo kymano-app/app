@@ -15,6 +15,7 @@ import 'core-js/stable';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
+import { globalShortcut } from 'electron/main';
 import path from 'path';
 import 'regenerator-runtime/runtime';
 import { read } from 'simple-yaml-import';
@@ -521,6 +522,10 @@ const createWindow = async () => {
       nodeIntegration: true,
       contextIsolation: false,
     },
+  });
+
+  const ret = globalShortcut.register('CommandOrControl+Shift+I', () => {
+    mainWindow.webContents.toggleDevTools();
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

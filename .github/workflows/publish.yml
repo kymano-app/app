@@ -222,6 +222,11 @@ jobs:
             npm run build
             npm exec electron-builder -- --publish never --windows
 
+      - run: |
+            ls -l release/build/
+            for file in release/build/*; do mv "$file" `echo "$file" | sed 's/ /-/g'`; done
+            ls -l release/build/
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')

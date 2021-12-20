@@ -170,6 +170,7 @@ jobs:
           files: |
             release/build/*.deb
             release/build/*.freebsd
+            release/build/*.rpm
           prerelease: true
 
 

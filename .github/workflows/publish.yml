@@ -189,13 +189,6 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
-      - name: test1
-        shell: bash
-        run: echo "This is a test" | sed 's/ /-/g'
-
-      - name: test2
-        run: bash
-
       - name: Install Node and NPM
         uses: actions/setup-node@v2
         with:
@@ -229,7 +222,9 @@ jobs:
             npm run build
             npm exec electron-builder -- --publish never --windows
 
-      - run: |
+      - name: Renaming
+        shell: bash
+        run: |
             ls -l release/build/
             for file in release/build/*; do mv "$file" `echo "$file" | sed 's/ /-/g'`; done
             ls -l release/build/

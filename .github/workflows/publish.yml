@@ -169,4 +169,5 @@ jobs:
         with:
           files: |
             release/build/*.deb
+            release/build/*.freebsd
           prerelease: true

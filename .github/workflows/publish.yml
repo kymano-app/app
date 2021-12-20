@@ -104,7 +104,7 @@ jobs:
             release/build/*.zip
             release/build/*.dmg
             release/build/*.blockmap
-            release/build/latest-mac.yml
+            release/build/latest*yml
           prerelease: true
 
   publish-linux:
@@ -171,6 +171,7 @@ jobs:
             release/build/*.deb
             release/build/*.freebsd
             release/build/*.rpm
+            release/build/latest*yml
           prerelease: true
 
 
@@ -226,4 +227,5 @@ jobs:
         with:
           files: |
             release/build/*.exe
+            release/build/latest*yml
           prerelease: true

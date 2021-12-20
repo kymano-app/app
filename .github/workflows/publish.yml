@@ -36,7 +36,6 @@ jobs:
 
   publish-mac:
     name: publish
-    needs: [prebuild-linux-better-sqlite3]
     runs-on: macos-11
 
     strategy:
@@ -63,15 +62,6 @@ jobs:
             mkdir -p ./release/app/base/
             cp /Volumes/XQuartz-2.8.1/XQuartz.pkg ./release/app/base/
             ls -l ./release/app/base/
-
-      - name: Download better_sqlite3
-        uses: actions/download-artifact@v2
-        with:
-          name: better-sqlite3
-          path: prebuilds
-
-      - run: |
-          mv prebuilds/better-sqlite3-v7.4.5-electron-v99-linuxmusl-arm64.tar.gz prebuilds/better-sqlite3-v7.4.5-electron-v99-linux-arm64.tar.gz
 
       - name: Install Node and NPM
         uses: actions/setup-node@v2
@@ -115,4 +105,68 @@ jobs:
             release/build/*.dmg
             release/build/*.blockmap
             release/build/latest-mac.yml
+          prerelease: true
+
+  publish-linux:
+    name: publish
+    needs: [prebuild-linux-better-sqlite3]
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        platform: [linux]
+        arch: [arm64]
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v2
+
+      - name: Download better_sqlite3
+        uses: actions/download-artifact@v2
+        with:
+          name: better-sqlite3
+          path: prebuilds
+
+      - run: |
+          mv prebuilds/better-sqlite3-v7.4.5-electron-v99-linuxmusl-arm64.tar.gz prebuilds/better-sqlite3-v7.4.5-electron-v99-linux-arm64.tar.gz
+
+      - name: Install Node and NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Publish releases
+        env:
+          # These values are used for auto updates signing
+          #APPLE_ID: ${{ secrets.APPLE_ID }}
+          #APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          #CSC_LINK: ${{ secrets.CSC_LINK }}
+          #CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          # This is used for uploading release assets to github
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+            ls -l prebuilds
+            npm run postinstall
+            npm run build
+            npm exec electron-builder -- --publish never --linux
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            release/build/*.deb
           prerelease: true

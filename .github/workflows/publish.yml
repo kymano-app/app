@@ -189,6 +189,13 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
+      - name: test1
+        shell: bash
+        run: echo "This is a test" | sed 's/ /-/g'
+
+      - name: test2
+        run: bash
+
       - name: Install Node and NPM
         uses: actions/setup-node@v2
         with:

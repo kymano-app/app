@@ -172,6 +172,7 @@ jobs:
             release/build/*.freebsd
             release/build/*.rpm
             release/build/latest*yml
+            release/build/*.blockmap
           prerelease: true
 
 
@@ -228,4 +229,5 @@ jobs:
           files: |
             release/build/*.exe
             release/build/latest*yml
+            release/build/*.blockmap
           prerelease: true

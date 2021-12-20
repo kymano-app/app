@@ -62,6 +62,7 @@ export default class AppUpdater {
 }
 
 console.log(`${app.getPath('userData')}/sqlite3.db`);
+log.debug(`${app.getPath('userData')}/sqlite3.db`);
 
 const db = new Database(`${app.getPath('userData')}/sqlite3.db`, {
   verbose: console.log,
@@ -127,6 +128,7 @@ const row = db
     `SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='repo_v1'`
   )
   .get();
+log.debug(row);
 
 if (row.count === 0) {
   db.exec(`CREATE TABLE repo_v1 (

@@ -197,6 +197,7 @@ jobs:
           key: qemu-win
 
       - name: qemu
+        shell: bash
         run: |
           mkdir qemu
           cd qemu

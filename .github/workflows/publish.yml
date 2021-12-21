@@ -189,6 +189,22 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v2
 
+      - name: Cache xquartz
+        id: cache-xquartz
+        uses: actions/cache@v2
+        with:
+          path: release/app/base
+          key: qemu-win
+
+      - name: qemu
+        run: |
+        mkdir qemu
+        cd qemu
+        wget https://qemu.weilnetz.de/w64/2021/qemu-w64-setup-20210203.exe
+        7z x qemu-w64-setup-20210203.exe
+        cd ../
+        mv qemu release/app/base/
+
       - name: Install Node and NPM
         uses: actions/setup-node@v2
         with:

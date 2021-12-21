@@ -12,7 +12,7 @@ import AdmZip from 'adm-zip';
 import axios from 'axios';
 import Database from 'better-sqlite3';
 import 'core-js/stable';
-import { app, BrowserWindow, ipcMain, shell, globalShortcut } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
@@ -592,7 +592,7 @@ app
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow();
+      if (mainWindow === null && !isCalledViaCLI) createWindow();
     });
   })
   .catch(console.log);

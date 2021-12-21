@@ -30,6 +30,13 @@ const { spawn } = require('child_process');
 const appData = app.getPath('appData');
 app.setPath('userData', path.join(appData, build.productName));
 
+function checkIfCalledViaCLI(args: any[]) {
+  if (args && args.length > 1) {
+    return true;
+  }
+  return false;
+}
+
 const splitForQuery = (line: string): string[] => {
   const arr = line
     .toLowerCase()
@@ -575,7 +582,13 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    const isCalledViaCLI = checkIfCalledViaCLI(process.argv);
+
+    if (!isCalledViaCLI) {
+      createWindow();
+    } else {
+      log.debug(JSON.stringify(process.argv));
+    }
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

@@ -201,7 +201,7 @@ jobs:
         run: |
           mkdir qemu
           cd qemu
-          wget https://qemu.weilnetz.de/w64/2021/qemu-w64-setup-20210203.exe
+          curl -L -O https://qemu.weilnetz.de/w64/2021/qemu-w64-setup-20210203.exe
           7z x qemu-w64-setup-20210203.exe
           cd ../
           mv qemu release/app/base/

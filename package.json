@@ -33,7 +33,7 @@
   },
   "build": {
     "productName": "kymano",
-    "appId": "org.erb.Kymano",
+    "appId": "app.kymano",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

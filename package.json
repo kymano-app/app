@@ -37,9 +37,9 @@
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
-      "base",
-      "dist",
-      "node_modules",
+      "base/",
+      "dist/",
+      "node_modules/",
       "package.json"
     ],
     "afterSign": ".erb/scripts/notarize.js",
@@ -110,7 +110,8 @@
       "output": "release/build"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**",
+      "./externalBinaries/**"
     ],
     "publish": {
       "provider": "github",
@@ -197,6 +198,7 @@
     "@types/react-router-dom": "^5.3.2",
     "@types/react-test-renderer": "^17.0.1",
     "@types/terser-webpack-plugin": "^5.0.4",
+    "@types/uuid": "^8.3.3",
     "@types/webpack-env": "^1.16.3",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "browserslist-config-erb": "^0.0.3",
@@ -257,11 +259,13 @@
     "@emotion/styled": "^11.6.0",
     "@mui/material": "^5.2.3",
     "adm-zip": "^0.5.9",
+    "await-spawn": "^4.0.2",
     "axios": "^0.24.0",
     "electron": "^16.0.4",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.1",
     "electron-updater": "^4.3.9",
+    "hasha": "^5.2.2",
     "history": "4.x.x",
     "js-yaml": "^4.1.0",
     "node-abi": "^3.5.0",
@@ -272,6 +276,7 @@
     "regenerator-runtime": "^0.13.9",
     "simple-yaml-import": "^0.2.0",
     "systeminformation": "^5.9.17",
+    "uuid": "^8.3.2",
     "yaml": "2.0.0-9"
   },
   "devEngines": {

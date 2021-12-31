@@ -127,21 +127,27 @@ const addDisplayConfig = (ymlContent, resultConfig, type) => {
       });
     }
 
-    if (ymlContent[type].drivers) {
-      const newDrivers = formatConfig(ymlContent[type].drivers);
-      newDrivers.forEach((drive) => {
-        resultConfig[type].drivers = resultConfig[type].drivers || {};
-        if (!resultConfig[type].drivers[drive.name]) {
-          resultConfig[type].drivers[drive.name] = {};
-          resultConfig[type].drivers[drive.name].layers = [];
+    if (ymlContent[type].drives) {
+      const newDrives = formatConfig(ymlContent[type].drives);
+      newDrives.forEach((drive) => {
+        resultConfig[type].drives = resultConfig[type].drives || {};
+        if (!resultConfig[type].drives[drive.name]) {
+          resultConfig[type].drives[drive.name] = {};
+          if (drive.layers) {
+            resultConfig[type].drives[drive.name].layers = [];
+          }
         }
-        if (drive.strategy === 'replace') {
-          resultConfig[type].drivers[drive.name].layers = [...drive.layers];
-        } else {
-          resultConfig[type].drivers[drive.name].layers = [
-            ...resultConfig[type].drivers[drive.name].layers,
-            ...drive.layers,
-          ];
+        if (drive.layers) {
+          if (drive.strategy === 'replace') {
+            resultConfig[type].drives[drive.name].layers = [...drive.layers];
+          } else {
+            resultConfig[type].drives[drive.name].layers = [
+              ...resultConfig[type].drives[drive.name].layers,
+              ...drive.layers,
+            ];
+          }
+        } else if (drive.path) {
+          resultConfig[type].drives[drive.name].path = drive.path;
         }
       });
     }
@@ -163,6 +169,7 @@ const addDisplayTypes = (ymlContent, resultConfig) => {
 const processYml = async (ymlPath, workingDir, prevFinalConfig = {}) => {
   let ymlContent;
   let finalConfig = {};
+  console.log(ymlPath, workingDir);
   if (ymlPath.slice(0, 1) === '/') {
     ymlContent = read(workingDir + ymlPath, { path: workingDir });
     if (ymlContent.from) {

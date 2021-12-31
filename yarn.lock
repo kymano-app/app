@@ -1338,6 +1338,11 @@
   dependencies:
     "@types/jest" "*"
 
+"@types/uuid@^8.3.3":
+  "integrity" "sha512-0LbEEx1zxrYB3pgpd1M5lEhLcXjKJnYghvhTRgaBeUivLHMDM1TzF3IJ6hXU2+8uA4Xz+5BA63mtZo5DjVT8iA=="
+  "resolved" "https://registry.npmjs.org/@types/uuid/-/uuid-8.3.3.tgz"
+  "version" "8.3.3"
+
 "@types/verror@^1.10.3":
   "integrity" "sha512-9UjMCHK5GPgQRoNbqdLIAvAy0EInuiqbW0PBMtVP6B5B2HQJlvoJHM+KodPZMEjOa5VkSc+5LH7xy+cUzQdmHw=="
   "resolved" "https://registry.npmjs.org/@types/verror/-/verror-1.10.5.tgz"
@@ -2137,6 +2142,13 @@
   "resolved" "https://registry.npmjs.org/atob/-/atob-2.1.2.tgz"
   "version" "2.1.2"
 
+"await-spawn@^4.0.2":
+  "integrity" "sha512-GdADmeLJiMvGKJD3xWBcX40DMn07JNH1sqJYgYJZH7NTGJ3B1qDjKBKzxhhyR1hjIcnUGFUmE/+4D1HcHAJBAA=="
+  "resolved" "https://registry.npmjs.org/await-spawn/-/await-spawn-4.0.2.tgz"
+  "version" "4.0.2"
+  dependencies:
+    "bl" "^4.0.3"
+
 "axe-core@^4.0.2":
   "integrity" "sha512-4Hk6iSA/H90rtiPoCpSkeJxNWCPBf7szwVvaUqrPdxo0j2Y04suHK9jPKXaE3WI7OET6wBSwsWw7FDc1DBq7iQ=="
   "resolved" "https://registry.npmjs.org/axe-core/-/axe-core-4.3.4.tgz"
@@ -2249,7 +2261,7 @@
   "resolved" "https://registry.npmjs.org/binary-extensions/-/binary-extensions-2.2.0.tgz"
   "version" "2.2.0"
 
-"bl@^4.1.0":
+"bl@^4.0.3", "bl@^4.1.0":
   "integrity" "sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w=="
   "resolved" "https://registry.npmjs.org/bl/-/bl-4.1.0.tgz"
   "version" "4.1.0"
@@ -5067,6 +5079,14 @@
   "version" "1.0.3"
   dependencies:
     "function-bind" "^1.1.1"
+
+"hasha@^5.2.2":
+  "integrity" "sha512-Hrp5vIK/xr5SkeN2onO32H0MgNZ0f17HRNH39WfL0SYUNOTZ5Lz1TJ8Pajo/87dYGEFlLMm7mIc/k/s6Bvz9HQ=="
+  "resolved" "https://registry.npmjs.org/hasha/-/hasha-5.2.2.tgz"
+  "version" "5.2.2"
+  dependencies:
+    "is-stream" "^2.0.0"
+    "type-fest" "^0.8.0"
 
 "he@^1.2.0":
   "integrity" "sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw=="
@@ -9436,6 +9456,11 @@
   "resolved" "https://registry.npmjs.org/type-fest/-/type-fest-0.21.3.tgz"
   "version" "0.21.3"
 
+"type-fest@^0.8.0":
+  "integrity" "sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA=="
+  "resolved" "https://registry.npmjs.org/type-fest/-/type-fest-0.8.1.tgz"
+  "version" "0.8.1"
+
 "type-is@~1.6.17", "type-is@~1.6.18":
   "integrity" "sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g=="
   "resolved" "https://registry.npmjs.org/type-is/-/type-is-1.6.18.tgz"
@@ -9596,6 +9621,11 @@
   "integrity" "sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A=="
   "resolved" "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
   "version" "3.4.0"
+
+"uuid@^8.3.2":
+  "integrity" "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg=="
+  "resolved" "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
+  "version" "8.3.2"
 
 "v8-compile-cache@^2.0.3":
   "integrity" "sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA=="

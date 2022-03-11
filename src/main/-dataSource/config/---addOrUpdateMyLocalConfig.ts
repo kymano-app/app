@@ -3,7 +3,8 @@ import { Database } from 'better-sqlite3';
 const addOrUpdateMyLocalConfig = async (
   config: {
     name: any;
-    darwin: any;
+    arch: any;
+    macos: any;
     linux: any;
     win: any;
   },
@@ -21,7 +22,8 @@ const addOrUpdateMyLocalConfig = async (
     await db.prepare(sql).run(
       config.name,
       JSON.stringify({
-        darwin: config.darwin,
+        arch: config.arch,
+        macos: config.macos,
         linux: config.linux,
         win: config.win,
       })
@@ -30,7 +32,8 @@ const addOrUpdateMyLocalConfig = async (
     const sql = `UPDATE my_local_config SET config = json(?) WHERE name = ?`;
     await db.prepare(sql).run(
       JSON.stringify({
-        darwin: config.darwin,
+        arch: config.arch,
+        macos: config.macos,
         linux: config.linux,
         win: config.win,
       }),

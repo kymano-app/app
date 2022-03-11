@@ -127,6 +127,18 @@ const addDisplayConfig = (ymlContent, resultConfig, type) => {
       });
     }
 
+    if (ymlContent[type].open) {
+      resultConfig[type].open = ymlContent[type].open;
+    }
+
+    if (ymlContent[type].qemu) {
+      resultConfig[type].qemu = ymlContent[type].qemu;
+    }
+
+    if (ymlContent[type].message) {
+      resultConfig[type].message = ymlContent[type].message;
+    }
+
     if (ymlContent[type].drives) {
       const newDrives = formatConfig(ymlContent[type].drives);
       newDrives.forEach((drive) => {
@@ -156,7 +168,7 @@ const addDisplayConfig = (ymlContent, resultConfig, type) => {
 };
 const addDisplayTypes = (ymlContent, resultConfig) => {
   const resultConfigWithDisplayTypes = resultConfig || {};
-  ['local', 'gpuStream', 'vnc', 'console'].forEach((type) => {
+  ['local', 'remote'].forEach((type) => {
     resultConfigWithDisplayTypes[type] = addDisplayConfig(
       ymlContent,
       resultConfigWithDisplayTypes ?? {},
@@ -192,6 +204,7 @@ const processYml = async (ymlPath, workingDir, prevFinalConfig = {}) => {
   //   }
   // );
   finalConfig.name = ymlContent.name;
+  if (ymlContent.arch) finalConfig.arch = ymlContent.arch;
   if (ymlContent.description) finalConfig.description = ymlContent.description;
   if (ymlContent.version) finalConfig.version = ymlContent.version;
   if (ymlContent.picture) finalConfig.picture = ymlContent.picture;
@@ -205,8 +218,8 @@ const processYml = async (ymlPath, workingDir, prevFinalConfig = {}) => {
     );
   }
 
-  if (ymlContent.darwin) {
-    finalConfig.darwin = addDisplayTypes(ymlContent.darwin, finalConfig.darwin);
+  if (ymlContent.macos) {
+    finalConfig.macos = addDisplayTypes(ymlContent.macos, finalConfig.macos);
   }
   if (ymlContent.linux) {
     finalConfig.linux = addDisplayTypes(ymlContent.linux, finalConfig.linux);

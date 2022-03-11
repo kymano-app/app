@@ -24,7 +24,7 @@ const add = async (
     description: any;
     picture: any;
     releaseDescription: any;
-    darwin: any;
+    macos: any;
     linux: any;
     win: any;
   },
@@ -83,7 +83,7 @@ const add = async (
     config.picture,
     config.releaseDescription,
     JSON.stringify({
-      darwin: config.darwin,
+      macos: config.macos,
       linux: config.linux,
       win: config.win,
     })

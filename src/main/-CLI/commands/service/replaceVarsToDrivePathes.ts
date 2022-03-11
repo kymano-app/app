@@ -7,7 +7,8 @@ const replaceVarsToDrivePathes = async (config: any, configVars: any) => {
       configVars.forEach((variable) => {
         const find = `\\$${variable[0]}`;
         const re = new RegExp(find, 'g');
-        value = value.replace(re, variable[1]);
+        value = value.replace(re, variable[1].replace(/ /g, `\\ `));
+        console.log(value)
       });
     }
     confparams.push(name);

@@ -1,10 +1,10 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import path from 'path';
 import { useEffect, useRef, useState } from 'react';
 import { MemoryRouter as Router, Route, Switch } from 'react-router-dom';
 import './App.css';
+import { MyDropzone } from './MyDropzone';
 import sendAsync from './renderer';
 
 const { spawn } = require('child_process');
@@ -107,15 +107,15 @@ const Hello = () => {
   };
 
   useEffect(() => {
-    sendAsync('1224')
-      .then((result: unknown) => {
-        // const row = db.prepare('SELECT * FROM cats').get();
-        // console.log(row);
-        console.log(result);
-        setVms(result);
-        return false;
-      })
-      .catch(() => {});
+    // sendAsync('1224')
+    //   .then((result: unknown) => {
+    //     // const row = db.prepare('SELECT * FROM cats').get();
+    //     // console.log(row);
+    //     console.log(result);
+    //     setVms(result);
+    //     return false;
+    //   })
+    //   .catch(() => {});
   }, []);
 
   return (
@@ -130,6 +130,7 @@ const Hello = () => {
           </Button>
         </Box>
       </Box>
+      <MyDropzone/>
       <Box sx={{ display: 'flex' }}>
         {vms &&
           vms.map((vm: any) => {

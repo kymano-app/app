@@ -15,23 +15,19 @@ import 'core-js/stable';
 import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
+import { DataSource, Kymano, QemuCommands } from 'kymano';
 import path from 'path';
 import 'regenerator-runtime/runtime';
 import { read } from 'simple-yaml-import';
 import si from 'systeminformation';
 import { build, version } from '../../package.json';
-import processCLI from './CLI/processCLI';
-import addConfig from './dataSource/config/addConfig';
-import createTables from './dataSource/config/createTables';
-import getVmsFromConfig from './dataSource/config/getVmsFromConfig';
 import MenuBuilder from './menu';
-import checkAndOpenXquartzPkg from './service/checkAndOpenXquartzPkg';
-import getExternalBinariesPath from './service/getExternalBinariesPath';
 import getRepoListDir from './service/getRepoListDir';
 import { resolveHtmlPath } from './util';
 import processConfig from './v1/processConfig';
 
 const fs = require('fs').promises;
+const fsNormal = require('fs');
 const { spawn } = require('child_process');
 
 const appData = app.getPath('appData');
@@ -62,16 +58,8 @@ const db = new Database(`${app.getPath('userData')}/sqlite3.db`, {
   verbose: console.log,
 });
 
-const row = db
-  .prepare(
-    `SELECT count(*) as count FROM sqlite_master WHERE type='table' AND name='repo_v1'`
-  )
-  .get();
-log.debug(row);
-
-if (row.count === 0) {
-  createTables(db);
-}
+const dataSource = new DataSource(db);
+const kymano = new Kymano(dataSource, new QemuCommands());
 
 let mainWindow: BrowserWindow | null = null;
 function listDirectories(dirs: any[]) {
@@ -79,6 +67,22 @@ function listDirectories(dirs: any[]) {
     files.flat()
   );
 }
+
+ipcMain.handle('save-file', async (event, bytes, path) => {
+  console.log('save-file::::', path);
+  fsNormal.appendFileSync(path, Buffer.from(bytes));
+});
+
+ipcMain.handle('import-layer', async (event, path) => {
+  console.log('import-layer::::', path);
+  await kymano.importLayer(path);
+  console.log('!!!!!!!!!!!!');
+});
+
+ipcMain.handle('run-guestfs', async (event) => {
+  await kymano.run();
+  console.log('!!!!!!!!!!!!');
+});
 
 ipcMain.handle('electron-store-set', async (event, someArgument) => {
   const valueObject = {
@@ -100,7 +104,7 @@ ipcMain.handle('electron-store-set', async (event, someArgument) => {
   });
 
   console.log('checkAndOpenXquartzPkg');
-  checkAndOpenXquartzPkg();
+  // checkAndOpenXquartzPkg();
 
   const body = await axios.get(
     `https://codeload.${data.repos[0]}/zip/refs/heads/master`,

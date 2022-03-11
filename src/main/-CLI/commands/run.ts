@@ -1,4 +1,5 @@
 import path from 'path';
+import os from 'os';
 import addOrUpdateMyLocalConfig from '../../dataSource/config/addOrUpdateMyLocalConfig';
 import processConfig from '../../v1/processConfig';
 import execConfig from './service/execConfig';
@@ -35,10 +36,12 @@ const run = async (args: any[], db: any) => {
       `/${path.basename(urlOrPath)}`,
       addAbsolutePathForRunningDirectory(directory)
     );
-    console.log(parsedConfig);
+    console.log('parsedConfig::', parsedConfig);
+    console.log('os.platform::', os.platform());
+
     // addMyLocalConfig(parsedConfig, db);
-    addOrUpdateMyLocalConfig(parsedConfig, db);
-    execConfig(parsedConfig.name, db);
+    await addOrUpdateMyLocalConfig(parsedConfig, db);
+    await execConfig(parsedConfig.name, db);
   }
 };
 

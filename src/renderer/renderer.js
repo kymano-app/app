@@ -26,6 +26,7 @@ export function importLayer(patch) {
     ipcRenderer
       .invoke('import-layer', patch)
       .then((result) => {
+        ipcRenderer.invoke('run-guestfs');
         console.log('result::::', result);
         resolve(result);
         return true;

@@ -74,14 +74,20 @@ ipcMain.handle('save-file', async (event, bytes, path) => {
 });
 
 ipcMain.handle('import-layer', async (event, path) => {
+  const rows = await dataSource.getTables();
+  console.log('rows::::::::', rows);
+  if (rows === 0) {
+    await dataSource.createTables();
+  }
+
   console.log('import-layer::::', path);
   await kymano.importLayer(path);
-  console.log('!!!!!!!!!!!!');
+  console.log('import-layer:::: ok!!');
 });
 
 ipcMain.handle('run-guestfs', async (event) => {
-  await kymano.run();
-  console.log('!!!!!!!!!!!!');
+  await kymano.run('guestfs', []);
+  console.log('un-guest ok !!!');
 });
 
 ipcMain.handle('electron-store-set', async (event, someArgument) => {

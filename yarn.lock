@@ -6557,6 +6557,29 @@
   "resolved" "https://registry.npmjs.org/klona/-/klona-2.0.4.tgz"
   "version" "2.0.4"
 
+"kymano@file:../kymano":
+  "resolved" "file:../kymano"
+  "version" "0.0.46"
+  dependencies:
+    "@babel/runtime" "^7.16.7"
+    "adm-zip" "^0.5.9"
+    "await-spawn" "^4.0.2"
+    "axios" "^0.24.0"
+    "better-sqlite3" "^7.4.6"
+    "env-paths" "^3.0.0"
+    "esm" "^3.2.25"
+    "hasha" "^5.2.2"
+    "minimist" "^1.2.5"
+    "progress" "^2.0.3"
+    "request" "^2.88.2"
+    "request-progress" "^3.0.0"
+    "rollup-plugin-commonjs" "^10.1.0"
+    "rollup-plugin-node-resolve" "^5.2.0"
+    "rollup-plugin-typescript" "^1.0.1"
+    "simple-yaml-import" "^0.2.0"
+    "tmp" "^0.2.1"
+    "uuid" "^8.3.2"
+
 "language-subtag-registry@~0.3.2":
   "integrity" "sha512-L0IqwlIXjilBVVYKFT37X9Ih11Um5NEl9cbJIuU/SwP/zEEAbBPOnEeeuxVMf45ydWQRDQN3Nqc96OgbH1K+Pg=="
   "resolved" "https://registry.npmjs.org/language-subtag-registry/-/language-subtag-registry-0.3.21.tgz"
@@ -9410,7 +9433,7 @@
     "inherits" "^2.0.3"
     "readable-stream" "^3.1.1"
 
-"tar@^6.0.2", "tar@^6.0.5", "tar@^6.1.11", "tar@^6.1.2":
+"tar@^6.0.2", "tar@^6.0.5", "tar@^6.1.2":
   "integrity" "sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA=="
   "resolved" "https://registry.npmjs.org/tar/-/tar-6.1.11.tgz"
   "version" "6.1.11"

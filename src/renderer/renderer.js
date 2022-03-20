@@ -1,3 +1,5 @@
+import path from 'path';
+
 const electron = window.require('electron');
 const { ipcRenderer } = electron;
 
@@ -22,6 +24,10 @@ export function sendFile(bytes, patch) {
 
 export function importLayer(patch) {
   return new Promise((resolve) => {
+    console.log(
+      '::::::::',
+      path.resolve(__dirname, '..', '..', '..', 'app.asar.unpacked', 'node_modules')
+    );
     console.log('ipcRenderer import-layer', patch);
     ipcRenderer
       .invoke('import-layer', patch)

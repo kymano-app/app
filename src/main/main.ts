@@ -62,6 +62,7 @@ const dataSource = new DataSource(db);
 const kymano = new Kymano(dataSource, new QemuCommands());
 
 let mainWindow: BrowserWindow | null = null;
+
 function listDirectories(dirs: any[]) {
   return Promise.all(dirs.map((dir) => fs.readdir(dir))).then((files) =>
     files.flat()
@@ -86,8 +87,12 @@ ipcMain.handle('import-layer', async (event, path) => {
 });
 
 ipcMain.handle('run-guestfs', async (event) => {
-  await kymano.run('guestfs', []);
-  console.log('un-guest ok !!!');
+  try {
+    await kymano.run('guestfs', []);
+    console.log('un-guest ok !!!');
+  } catch (e) {
+    fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
+  }
 });
 
 ipcMain.handle('electron-store-set', async (event, someArgument) => {
@@ -265,6 +270,17 @@ const createWindow = async () => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
+  mainWindow.webContents.executeJavaScript(`
+  var path = require('path');
+  module.paths.push(path.resolve('node_modules'));
+  module.paths.push(path.resolve('../node_modules'));
+  module.paths.push(path.resolve(__dirname, '..', '..', 'node_modules'));
+  module.paths.push(path.resolve(__dirname, '..', '..', '..', 'app.asar.unpacked', 'node_modules'));
+  path = undefined;
+`);
+  console.log(path.resolve(__dirname, '..', '..', 'app.asar', 'node_modules'));
+  log.debug(path.resolve(__dirname, '..', '..', 'app.asar', 'node_modules'));
+
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -274,6 +290,7 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+    mainWindow.webContents.openDevTools();
   });
 
   mainWindow.on('closed', () => {

@@ -35,7 +35,9 @@
     "productName": "kymano",
     "appId": "app.kymano",
     "asar": true,
-    "asarUnpack": "**\\*.{node,dll}",
+    "asarUnpack": [
+      "**\\*.{node,dll}"
+    ],
     "files": [
       "base/",
       "dist/",
@@ -47,14 +49,12 @@
       "target": {
         "target": "default",
         "arch": [
-          "x64",
           "arm64"
         ]
       },
       "type": "distribution",
       "hardenedRuntime": true,
       "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist",
       "gatekeeperAssess": false
     },
     "dmg": {
@@ -270,6 +270,7 @@
     "hasha": "^5.2.2",
     "history": "4.x.x",
     "js-yaml": "^4.1.0",
+    "kymano": "file:../kymano",
     "node-abi": "^3.5.0",
     "node-fetch": "^2.6.6",
     "react": "^17.0.2",
@@ -279,7 +280,6 @@
     "regenerator-runtime": "^0.13.9",
     "simple-yaml-import": "^0.2.0",
     "systeminformation": "^5.9.17",
-    "tar": "^6.1.11",
     "tmp": "^0.2.1",
     "unzipper": "^0.10.11",
     "uuid": "^8.3.2",

@@ -1,5 +1,3 @@
-import path from 'path';
-
 const electron = window.require('electron');
 const { ipcRenderer } = electron;
 
@@ -22,18 +20,42 @@ export function sendFile(bytes, patch) {
   });
 }
 
+export function addImportLayerToGuestFs(layerPath) {
+  return new Promise((resolve) => {
+    console.log('addImportLayerToGuestFs', layerPath);
+    ipcRenderer
+      .invoke('add-imported-layer-to-guestfs', layerPath)
+      .then((result) => {
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
 export function importLayer(patch) {
   return new Promise((resolve) => {
-    console.log(
-      '::::::::',
-      path.resolve(__dirname, '..', '..', '..', 'app.asar.unpacked', 'node_modules')
-    );
     console.log('ipcRenderer import-layer', patch);
     ipcRenderer
       .invoke('import-layer', patch)
       .then((result) => {
-        ipcRenderer.invoke('run-guestfs');
-        console.log('result::::', result);
+        console.log('import-layer result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function isGustFsRunning() {
+  return new Promise((resolve) => {
+    ipcRenderer
+      .invoke('is-gustfs-running')
+      .then((result) => {
         resolve(result);
         return true;
       })
@@ -48,7 +70,7 @@ export function runGuestFs() {
     ipcRenderer
       .invoke('run-guestfs')
       .then((result) => {
-        console.log('result::::', result);
+        console.log('runGuestFs result::::', result);
         resolve(result);
         return true;
       })

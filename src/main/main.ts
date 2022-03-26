@@ -18,11 +18,15 @@ import { autoUpdater } from 'electron-updater';
 import { DataSource, Kymano, QemuCommands } from 'kymano';
 import path from 'path';
 import 'regenerator-runtime/runtime';
+import { isRunning } from 'renderer/renderer';
 import { read } from 'simple-yaml-import';
 import si from 'systeminformation';
+import net from 'net';
+import readline from 'readline';
 import { build, version } from '../../package.json';
 import MenuBuilder from './menu';
 import getRepoListDir from './service/getRepoListDir';
+import { isRunningByPid } from './service/isRunningByPid';
 import { resolveHtmlPath } from './util';
 import processConfig from './v1/processConfig';
 
@@ -74,6 +78,13 @@ ipcMain.handle('save-file', async (event, bytes, path) => {
   fsNormal.appendFileSync(path, Buffer.from(bytes));
 });
 
+ipcMain.handle('is-gustfs-running', async (event) => {
+  const pid = fsNormal.readFileSync(
+    path.join(app.getPath('userData'), 'guestfs.pid')
+  );
+  return isRunningByPid(pid);
+});
+
 ipcMain.handle('import-layer', async (event, path) => {
   const rows = await dataSource.getTables();
   console.log('rows::::::::', rows);
@@ -82,14 +93,47 @@ ipcMain.handle('import-layer', async (event, path) => {
   }
 
   console.log('import-layer::::', path);
-  await kymano.importLayer(path);
-  console.log('import-layer:::: ok!!');
+  const layerPath = await kymano.importLayer(path);
+  console.log('import-layer:::: ok!!', layerPath);
+  return layerPath;
+});
+
+ipcMain.handle('add-imported-layer-to-guestfs', async (event, path) => {
+  const client = new net.Socket();
+  const disk = 'disk127';
+  const device = `${disk}d`;
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // /Users/oleg/Library/Application Support/kymano/layers/6cfc729346bbb60ff68dfe3c589b5fbd6ef6ac84ab82abb0295b20f8d95ea672
+  client.connect(5551, 'localhost', function () {
+    client.write(
+      `drive_add 0 "if=none,file=${path},readonly=on,id=${disk}"\n`,
+      function () {
+        console.log('move forward command sent');
+      }
+    );
+  });
+
+  const rl = readline.createInterface({ input: client });
+  rl.on('line', function (l) {
+    console.log('line:', l);
+    if (l == 'OK') {
+      client.write(
+        `device_add usb-storage,serial=KY-JD9034vssN90FFGO9,drive=${disk},id=${device}\n`
+      );
+      console.log('done');
+    }
+  });
 });
 
 ipcMain.handle('run-guestfs', async (event) => {
   try {
-    await kymano.run('guestfs', []);
-    console.log('un-guest ok !!!');
+    const response = await kymano.run('guestfs', []);
+    const { pid } = response[0].child;
+    fsNormal.writeFileSync(
+      path.join(app.getPath('userData'), 'guestfs.pid'),
+      pid.toString()
+    );
+    return pid;
   } catch (e) {
     fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
   }

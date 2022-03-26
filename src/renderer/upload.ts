@@ -1,8 +1,13 @@
+import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
+
 const tmp = require('tmp');
 
-export const upload = async (file: File, callback: CallableFunction) => {
+export const upload = async (
+  file: File,
+  callback: CallableFunction,
+  setProgress: CallableFunction
+) => {
   return new Promise((resolve, reject) => {
-    // the function is executed automatically when the promise is constructed
     const tmpobj = tmp.fileSync();
     console.log('tmpobj.name', tmpobj.name);
     const fileSize = file.size;
@@ -13,7 +18,8 @@ export const upload = async (file: File, callback: CallableFunction) => {
       if (evt.target.error == null) {
         offset += evt.target.result.byteLength;
         callback(evt.target.result, tmpobj.name);
-        console.log(offset);
+        console.log('offset:::::', offset);
+        setProgress(offset);
       } else {
         console.log(`Read error: ${evt.target.error}`);
         reject();

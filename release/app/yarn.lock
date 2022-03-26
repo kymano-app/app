@@ -15,9 +15,9 @@
   "version" "0.0.51"
 
 "@types/node@*":
-  "integrity" "sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ=="
-  "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.21.tgz"
-  "version" "17.0.21"
+  "integrity" "sha512-8FwbVoG4fy+ykY86XCAclKZDORttqE5/s7dyWZKLXTdv3vRy5HozBEinG5IqhvPXXzIZEcTVbuHlQEI6iuwcmw=="
+  "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.22.tgz"
+  "version" "17.0.22"
 
 "@types/normalize-package-data@^2.4.0":
   "integrity" "sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw=="
@@ -635,7 +635,7 @@
   "resolved" "https://registry.npmjs.org/isstream/-/isstream-0.1.2.tgz"
   "version" "0.1.2"
 
-"js-yaml@^3.13.1":
+"js-yaml@^3.13.1", "js-yaml@^3.14.1":
   "integrity" "sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g=="
   "resolved" "https://registry.npmjs.org/js-yaml/-/js-yaml-3.14.1.tgz"
   "version" "3.14.1"
@@ -680,10 +680,10 @@
     "json-schema" "0.4.0"
     "verror" "1.10.0"
 
-"kymano@^0.0.46":
-  "integrity" "sha512-MMS42FhFhTT0MxvNoGyeuFvGw8/KCFugvB6C+OR4IsEdshhI+ymuuoO4JErj65L7GG50pMLygTZki7SQbFBk3g=="
-  "resolved" "https://registry.npmjs.org/kymano/-/kymano-0.0.46.tgz"
-  "version" "0.0.46"
+"kymano@^0.0.59":
+  "integrity" "sha512-EaPl0xdndU/ymEat9ZZZGc0q0kApnkrMn79GqWI3GDjwUuYPk8O1VZCJvlMxicEzfXaWJVRIWVoMdMhsB4CzEw=="
+  "resolved" "https://registry.npmjs.org/kymano/-/kymano-0.0.59.tgz"
+  "version" "0.0.59"
   dependencies:
     "@babel/runtime" "^7.16.7"
     "adm-zip" "^0.5.9"
@@ -693,6 +693,7 @@
     "env-paths" "^3.0.0"
     "esm" "^3.2.25"
     "hasha" "^5.2.2"
+    "js-yaml" "^3.14.1"
     "minimist" "^1.2.5"
     "progress" "^2.0.3"
     "request" "^2.88.2"
@@ -701,6 +702,7 @@
     "rollup-plugin-node-resolve" "^5.2.0"
     "rollup-plugin-typescript" "^1.0.1"
     "simple-yaml-import" "^0.2.0"
+    "tar" "^6.1.11"
     "tmp" "^0.2.1"
     "uuid" "^8.3.2"
 

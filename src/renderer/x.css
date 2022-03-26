@@ -1,0 +1,3 @@
+.MuiTooltip-popper[data-popper-placement*='right'] .MuiTooltip-tooltip {
+  margin-left: 6px !important;
+}

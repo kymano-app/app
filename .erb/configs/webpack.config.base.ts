@@ -6,7 +6,7 @@ import webpack from 'webpack';
 import webpackPaths from './webpack.paths';
 import { dependencies as externals } from '../../release/app/package.json';
 
-export default {
+const configuration: webpack.Configuration = {
   externals: [...Object.keys(externals || {})],
 
   stats: 'errors-only',
@@ -26,6 +26,7 @@ export default {
       },
     ],
   },
+
   output: {
     path: webpackPaths.srcPath,
     // https://github.com/webpack/webpack/issues/1114
@@ -48,3 +49,5 @@ export default {
     }),
   ],
 };
+
+export default configuration;

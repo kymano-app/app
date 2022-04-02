@@ -8,44 +8,28 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
-import AdmZip from 'adm-zip';
-import axios from 'axios';
-import Database from 'better-sqlite3';
 import 'core-js/stable';
 import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
-import { DataSource, Kymano, QemuCommands } from 'kymano';
 import path from 'path';
 import 'regenerator-runtime/runtime';
-import { isRunning } from 'renderer/renderer';
-import { read } from 'simple-yaml-import';
-import si from 'systeminformation';
-import net from 'net';
-import readline from 'readline';
-import { build, version } from '../../package.json';
+import { init } from './ipcMainHandle';
 import MenuBuilder from './menu';
-import getRepoListDir from './service/getRepoListDir';
-import { isRunningByPid } from './service/isRunningByPid';
 import { resolveHtmlPath } from './util';
-import processConfig from './v1/processConfig';
 
-const fs = require('fs').promises;
-const fsNormal = require('fs');
-const { spawn } = require('child_process');
+// const appData = app.getPath('appData');
+// app.setPath('userData', path.join(appData, build.productName));
 
-const appData = app.getPath('appData');
-app.setPath('userData', path.join(appData, build.productName));
-
-function checkIfCalledViaCLI(args: any[]) {
-  if (args && args.length > 1) {
-    if (args.length === 4 && args[3] === './src/main/main.ts') {
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
+// function checkIfCalledViaCLI(args: any[]) {
+//   if (args && args.length > 1) {
+//     if (args.length === 4 && args[3] === './src/main/main.ts') {
+//       return false;
+//     }
+//     return true;
+//   }
+//   return false;
+// }
 
 export default class AppUpdater {
   constructor() {
@@ -55,195 +39,7 @@ export default class AppUpdater {
   }
 }
 
-console.log(`${app.getPath('userData')}/sqlite3.db`);
-log.debug(`${app.getPath('userData')}/sqlite3.db`);
-
-const db = new Database(`${app.getPath('userData')}/sqlite3.db`, {
-  verbose: console.log,
-});
-
-const dataSource = new DataSource(db);
-const kymano = new Kymano(dataSource, new QemuCommands());
-
 let mainWindow: BrowserWindow | null = null;
-
-function listDirectories(dirs: any[]) {
-  return Promise.all(dirs.map((dir) => fs.readdir(dir))).then((files) =>
-    files.flat()
-  );
-}
-
-ipcMain.handle('save-file', async (event, bytes, path) => {
-  console.log('save-file::::', path);
-  fsNormal.appendFileSync(path, Buffer.from(bytes));
-});
-
-ipcMain.handle('is-gustfs-running', async (event) => {
-  const pid = fsNormal.readFileSync(
-    path.join(app.getPath('userData'), 'guestfs.pid')
-  );
-  return isRunningByPid(pid);
-});
-
-ipcMain.handle('import-layer', async (event, path) => {
-  const rows = await dataSource.getTables();
-  console.log('rows::::::::', rows);
-  if (rows === 0) {
-    await dataSource.createTables();
-  }
-
-  console.log('import-layer::::', path);
-  const layerPath = await kymano.importLayer(path);
-  console.log('import-layer:::: ok!!', layerPath);
-  return layerPath;
-});
-
-ipcMain.handle('add-imported-layer-to-guestfs', async (event, path) => {
-  const client = new net.Socket();
-  const disk = 'disk127';
-  const device = `${disk}d`;
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  // /Users/oleg/Library/Application Support/kymano/layers/6cfc729346bbb60ff68dfe3c589b5fbd6ef6ac84ab82abb0295b20f8d95ea672
-  client.connect(5551, 'localhost', function () {
-    client.write(
-      `drive_add 0 "if=none,file=${path},readonly=on,id=${disk}"\n`,
-      function () {
-        console.log('move forward command sent');
-      }
-    );
-  });
-
-  const rl = readline.createInterface({ input: client });
-  rl.on('line', function (l) {
-    console.log('line:', l);
-    if (l == 'OK') {
-      client.write(
-        `device_add usb-storage,serial=KY-JD9034vssN90FFGO9,drive=${disk},id=${device}\n`
-      );
-      console.log('done');
-    }
-  });
-});
-
-ipcMain.handle('run-guestfs', async (event) => {
-  try {
-    const response = await kymano.run('guestfs', []);
-    const { pid } = response[0].child;
-    fsNormal.writeFileSync(
-      path.join(app.getPath('userData'), 'guestfs.pid'),
-      pid.toString()
-    );
-    return pid;
-  } catch (e) {
-    fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
-  }
-});
-
-ipcMain.handle('electron-store-set', async (event, someArgument) => {
-  const valueObject = {
-    cpu: 'manufacturer, brand, cores',
-    mem: 'total',
-    osInfo: 'platform, release, arch',
-    baseboard: 'model, manufacturer',
-    graphics: 'displays',
-  };
-
-  const sysInfo = await si.get(valueObject);
-  const mainDisplay = sysInfo.graphics.displays.filter(
-    (display: { main: boolean }) => display.main === true
-  )[0];
-
-  // const data = await fs.readFile(`${dirPath}repoList.yml`, 'utf8');
-  const data = read(`${getRepoListDir()}/repoList`, {
-    path: getRepoListDir(),
-  });
-
-  console.log('checkAndOpenXquartzPkg');
-  // checkAndOpenXquartzPkg();
-
-  const body = await axios.get(
-    `https://codeload.${data.repos[0]}/zip/refs/heads/master`,
-    {
-      responseType: 'arraybuffer',
-    }
-  );
-
-  const zip = new AdmZip(body.data);
-
-  try {
-    await fs.access(`${app.getPath('userData')}/${data.repos[0]}`);
-  } catch (error) {
-    fs.mkdir(`${app.getPath('userData')}/${data.repos[0]}`, {
-      recursive: true,
-    });
-  }
-  zip.extractAllTo(`${app.getPath('userData')}/${data.repos[0]}`, true);
-  const latestRepo = read(
-    `${app.getPath('userData')}/${data.repos[0]}/repo-master/latest`,
-    {
-      path: `${app.getPath('userData')}/${data.repos[0]}/repo-master`,
-    }
-  );
-
-  const repoVersion = db
-    .prepare(`SELECT version FROM repo_v1 WHERE url = ?`)
-    .get(data.repos[0]);
-  console.log(`repoVersion:${repoVersion}`);
-  if (!repoVersion || Object.keys(repoVersion).length === 0) {
-    const repoId = db
-      .prepare(
-        'INSERT INTO repo_v1 (version, url, repoSystemVersion) VALUES (?, ?, ?)'
-      )
-      .run(
-        latestRepo.version,
-        data.repos[0],
-        latestRepo.systemVersion
-      ).lastInsertRowid;
-
-    await Promise.all(
-      Object.entries(latestRepo.configs).map(async ([index, _]) => {
-        console.log(`type: ${latestRepo.configs[index].type}`);
-        console.log(latestRepo.configs[index]);
-
-        if (latestRepo.configs[index].type === 'searchable') {
-          console.log(`config parsing start`);
-
-          const config = await (async () => {
-            try {
-              console.log(`config parsing try`);
-              return await processConfig(
-                latestRepo.configs[index].from,
-                `${app.getPath('userData')}/${data.repos[0]}/repo-master`
-              );
-            } catch (error) {
-              return undefined;
-            }
-          })();
-          console.log(config);
-          if (!config) {
-            return;
-          }
-
-          await addConfig(config, db, repoId, index);
-        }
-      })
-    );
-
-    console.log('searchResults');
-
-    const result = await getVmsFromConfig(db, version, sysInfo, mainDisplay);
-    return result;
-  }
-  if (repoVersion > latestRepo.systemVersion) {
-    db.prepare('UPDATE repo SET version = ? WHERE url = ?').run(
-      latestRepo.version,
-      data.repos[0]
-    );
-  }
-
-  const result = await getVmsFromConfig(db, version, sysInfo, mainDisplay);
-  return result;
-});
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -251,13 +47,13 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-ipcMain.on('asynchronous-message', (event, arg) => {
-  event.reply('asynchronous-reply', app.getPath('userData'));
-});
+// ipcMain.on('asynchronous-message', (event, arg) => {
+//   event.reply('asynchronous-reply', app.getPath('userData'));
+// });
 
-ipcMain.on('electron-store-get', async (event, val) => {
-  event.returnValue = '123123';
-});
+// ipcMain.on('electron-store-get', async (event, val) => {
+//   event.returnValue = '123123';
+// });
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -303,8 +99,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -314,17 +109,14 @@ const createWindow = async () => {
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
-  mainWindow.webContents.executeJavaScript(`
-  var path = require('path');
-  module.paths.push(path.resolve('node_modules'));
-  module.paths.push(path.resolve('../node_modules'));
-  module.paths.push(path.resolve(__dirname, '..', '..', 'node_modules'));
-  module.paths.push(path.resolve(__dirname, '..', '..', '..', 'app.asar.unpacked', 'node_modules'));
-  path = undefined;
-`);
-  console.log(path.resolve(__dirname, '..', '..', 'app.asar', 'node_modules'));
-  log.debug(path.resolve(__dirname, '..', '..', 'app.asar', 'node_modules'));
-
+  //   mainWindow.webContents.executeJavaScript(`
+  //   var path = require('path');
+  //   module.paths.push(path.resolve('node_modules'));
+  //   module.paths.push(path.resolve('../node_modules'));
+  //   module.paths.push(path.resolve(__dirname, '..', '..', 'node_modules'));
+  //   module.paths.push(path.resolve(__dirname, '..', '..', '..', 'app.asar.unpacked', 'node_modules'));
+  //   path = undefined;
+  // `);
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
@@ -334,7 +126,6 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
-    mainWindow.webContents.openDevTools();
   });
 
   mainWindow.on('closed', () => {
@@ -370,19 +161,12 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    const isCalledViaCLI = checkIfCalledViaCLI(process.argv);
-
-    if (!isCalledViaCLI) {
-      createWindow();
-    } else {
-      app.dock.hide();
-      processCLI(process.argv, db);
-      // spawn('ssh', ['root@192.168.178.42'], { stdio: 'inherit' });
-    }
+    createWindow();
+    init(mainWindow);
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null && !isCalledViaCLI) createWindow();
+      if (mainWindow === null) createWindow();
     });
   })
   .catch(console.log);

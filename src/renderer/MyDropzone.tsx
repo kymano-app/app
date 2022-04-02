@@ -1,18 +1,35 @@
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { useNavigate } from 'react-router-dom';
 import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
-import { addImportLayerToGuestFs, importLayer, isGustFsRunning, runGuestFs, sendFile } from './renderer';
+import { useSearchResults } from './Context/SearchResultsContext';
+import {
+  addImportLayerToGuestFs,
+  execInGuestFs,
+  importLayer,
+  isGustFsRunning,
+  runGuestFs,
+  sendFile,
+} from './renderer';
 import { upload } from './upload';
+
+// const electron = window.require('electron');
+// const { ipcRenderer } = electron;
+
+// ipcRenderer.on('response-cmd', (event, response) => {
+// console.log('response:', response);
+// });
+
+// const fetch = require('node-fetch');
 
 // https://kovart.github.io/dashed-border-generator/
 const dashedBorder =
   "url(\"data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E3E3E3FF' stroke-width='4' stroke-dasharray='4%2c6' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e\")";
 
-export function MyDropzone() {
+export function MyDropzone({ updateVolumesList }) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const navigate = useNavigate();
   const fileUploadProgressBar = useFileUploadProgressBar();
@@ -36,7 +53,14 @@ export function MyDropzone() {
       await runGuestFs();
     }
 
-    await addImportLayerToGuestFs(layerPath);
+    const added = await addImportLayerToGuestFs(layerPath);
+    console.log('added', added);
+    if (added) {
+      console.log('layerPath', layerPath);
+      const hash = layerPath.match(/([\w]+)$/)[1];
+      await execInGuestFs('/bin/guestfs');
+      updateVolumesList(hash.slice(0, 33));
+    }
     // showFileExplorer()
   };
 
@@ -59,7 +83,7 @@ export function MyDropzone() {
   const onDrop = async (e: any) => {
     console.log('FileUploader onDrop:', e);
     // history.push('/guestfs');
-    navigate('/guestfs', { replace: true });
+    navigate('/volumes', { replace: true });
   };
 
   // https://dribbble.com/shots/4541690-File-Upload-Component/attachments/10455025?mode=media

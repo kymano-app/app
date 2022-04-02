@@ -1,14 +1,11 @@
-const electron = window.require('electron');
-const { ipcRenderer } = electron;
-
-export function sendFile(bytes, patch) {
+export function sendFile(bytes, tmpName) {
   return new Promise((resolve) => {
-    // ipcRenderer.once('electron-store-set', (_, arg) => {
+    // window.electron.once('electron-store-set', (_, arg) => {
     //   resolve(arg);
     // });
-    // ipcRenderer.send('electron-store-set', message);
-    ipcRenderer
-      .invoke('save-file', bytes, patch)
+    // window.electron.send('electron-store-set', message);
+    window.electron
+      .invoke('save-file', bytes, tmpName)
       .then((result) => {
         // console.log('result::::', result);
         resolve(result);
@@ -23,11 +20,12 @@ export function sendFile(bytes, patch) {
 export function addImportLayerToGuestFs(layerPath) {
   return new Promise((resolve) => {
     console.log('addImportLayerToGuestFs', layerPath);
-    ipcRenderer
+    window.electron
       .invoke('add-imported-layer-to-guestfs', layerPath)
       .then((result) => {
+        console.log('add-imported-layer-to-guestfs', result);
         resolve(result);
-        return true;
+        return result;
       })
       .catch((e) => {
         console.log('ERR::::', e);
@@ -35,10 +33,67 @@ export function addImportLayerToGuestFs(layerPath) {
   });
 }
 
+export function execInGuestFs(command) {
+  return new Promise((resolve) => {
+    console.log('execInGuestFs', command);
+    window.electron
+      .invoke('exec-in-guestfs', command)
+      .then((result) => {
+        console.log('exec-in-guestfs result::', result);
+        resolve(result);
+        return result;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function searchInGuestFs(command) {
+  return new Promise((resolve) => {
+    console.log('execInGuestFs', command);
+    window.electron
+      .invoke('search-in-guestfs', command)
+      .then((result) => {
+        console.log('search-in-guestfs', result);
+        resolve(result);
+        return result;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getVolumes() {
+  return new Promise((resolve) => {
+    console.log('window.electron get-volumes');
+    window.electron.invoke('get-volumes')
+      .then((result) => {
+        console.log('get-volumes result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+    // window.electron
+    //   .invoke('get-volumes')
+    //   .then((result) => {
+    //     console.log('get-volumes result', result);
+    //     resolve(result);
+    //     return true;
+    //   })
+    //   .catch((e) => {
+    //     console.log('ERR::::', e);
+    //   });
+  });
+}
+
 export function importLayer(patch) {
   return new Promise((resolve) => {
-    console.log('ipcRenderer import-layer', patch);
-    ipcRenderer
+    console.log('window.electron import-layer', patch);
+    window.electron
       .invoke('import-layer', patch)
       .then((result) => {
         console.log('import-layer result', result);
@@ -53,7 +108,7 @@ export function importLayer(patch) {
 
 export function isGustFsRunning() {
   return new Promise((resolve) => {
-    ipcRenderer
+    window.electron
       .invoke('is-gustfs-running')
       .then((result) => {
         resolve(result);
@@ -67,7 +122,7 @@ export function isGustFsRunning() {
 
 export function runGuestFs() {
   return new Promise((resolve) => {
-    ipcRenderer
+    window.electron
       .invoke('run-guestfs')
       .then((result) => {
         console.log('runGuestFs result::::', result);

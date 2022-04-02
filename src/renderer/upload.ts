@@ -1,23 +1,21 @@
-import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
-
-const tmp = require('tmp');
-
 export const upload = async (
   file: File,
   callback: CallableFunction,
   setProgress: CallableFunction
 ) => {
   return new Promise((resolve, reject) => {
-    const tmpobj = tmp.fileSync();
-    console.log('tmpobj.name', tmpobj.name);
+    const tmpName = (Math.random() + 1).toString(36).substring(2);
+    let tmpPath;
+    console.log('tmpobj.name', tmpName);
     const fileSize = file.size;
     const chunkSize = 1 * 1024 * 1024;
     let offset = 0;
     let chunkReaderBlock = null;
-    const readEventHandler = (evt: any) => {
+    const readEventHandler = async (evt: any) => {
       if (evt.target.error == null) {
         offset += evt.target.result.byteLength;
-        callback(evt.target.result, tmpobj.name);
+        tmpPath = await callback(evt.target.result, tmpName);
+        console.log('tmpPath:::::', tmpPath);
         console.log('offset:::::', offset);
         setProgress(offset);
       } else {
@@ -26,9 +24,8 @@ export const upload = async (
         return;
       }
       if (offset >= fileSize) {
-        console.log('Done reading file', tmpobj.name);
-        resolve(tmpobj.name);
-        // convrt to qcow2
+        console.log('Done reading file', tmpPath);
+        resolve(tmpPath);
         return;
       }
       chunkReaderBlock(offset, chunkSize, file);

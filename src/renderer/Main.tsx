@@ -2,13 +2,15 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { MyDropzone } from './MyDropzone';
 
-const { spawn } = require('child_process');
+// const { spawn } = require('child_process');
 
 export default function Main() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [vms, setVms] = useState<any>();
+  const navigate = useNavigate();
 
   const addRepository = () => {
     console.log(inputRef.current?.value);
@@ -97,6 +99,12 @@ export default function Main() {
     // });
     // });
   };
+
+  const updateVolumesList = (hash: string) => {
+    console.log('gotoSingleVolume', hash);
+    navigate(`/volumes`, { replace: true });
+  };
+
   return (
     <>
       <Box style={{ marginLeft: 48 }}>
@@ -130,7 +138,7 @@ export default function Main() {
               );
             })}
         </Box>
-        <MyDropzone />
+        <MyDropzone updateVolumesList={updateVolumesList} />
       </Box>
     </>
   );

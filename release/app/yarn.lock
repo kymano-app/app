@@ -15,9 +15,9 @@
   "version" "0.0.51"
 
 "@types/node@*":
-  "integrity" "sha512-8FwbVoG4fy+ykY86XCAclKZDORttqE5/s7dyWZKLXTdv3vRy5HozBEinG5IqhvPXXzIZEcTVbuHlQEI6iuwcmw=="
-  "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.22.tgz"
-  "version" "17.0.22"
+  "integrity" "sha512-UxDxWn7dl97rKVeVS61vErvw086aCYhDLyvRQZ5Rk65rZKepaFdm53GeqXaKBuOhED4e9uWq34IC3TdSdJJ2Gw=="
+  "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.23.tgz"
+  "version" "17.0.23"
 
 "@types/normalize-package-data@^2.4.0":
   "integrity" "sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw=="
@@ -680,10 +680,10 @@
     "json-schema" "0.4.0"
     "verror" "1.10.0"
 
-"kymano@^0.0.59":
-  "integrity" "sha512-EaPl0xdndU/ymEat9ZZZGc0q0kApnkrMn79GqWI3GDjwUuYPk8O1VZCJvlMxicEzfXaWJVRIWVoMdMhsB4CzEw=="
-  "resolved" "https://registry.npmjs.org/kymano/-/kymano-0.0.59.tgz"
-  "version" "0.0.59"
+"kymano@^0.0.61":
+  "integrity" "sha512-0dKveQ6LVAij4AqJeQKBs8ltFV/ESdjCXm++lcV6HFc+2riDsmgC+YRVg1fzX0UV5AG/oh90bwMoqARJzCwwuQ=="
+  "resolved" "https://registry.npmjs.org/kymano/-/kymano-0.0.61.tgz"
+  "version" "0.0.61"
   dependencies:
     "@babel/runtime" "^7.16.7"
     "adm-zip" "^0.5.9"
@@ -1330,9 +1330,9 @@
   "version" "0.8.1"
 
 "typescript@>=2.1.0":
-  "integrity" "sha512-HM/hFigTBHZhLXshn9sN37H085+hQGeJHJ/X7LpBWLID/fbc2acUMfU+lGD98X81sKP+pFa9f0DZmCwB9GnbAg=="
-  "resolved" "https://registry.npmjs.org/typescript/-/typescript-4.6.2.tgz"
-  "version" "4.6.2"
+  "integrity" "sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw=="
+  "resolved" "https://registry.npmjs.org/typescript/-/typescript-4.6.3.tgz"
+  "version" "4.6.3"
 
 "universalify@^0.1.0":
   "integrity" "sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg=="

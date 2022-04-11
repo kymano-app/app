@@ -1,26 +1,26 @@
-import AdmZip from 'adm-zip';
-import axios from 'axios';
 import Database from 'better-sqlite3';
 import 'core-js/stable';
 import { app, ipcMain } from 'electron';
-import { DataSource, Kymano, QemuCommands } from 'kymano';
+import { DataSource, Kymano, QemuCommands, globalSockets } from 'kymano';
 import net from 'net';
 import path from 'path';
 import 'regenerator-runtime/runtime';
-import { read } from 'simple-yaml-import';
-import si from 'systeminformation';
-import { build, version } from '../../package.json';
-import getRepoListDir from './service/getRepoListDir';
+import { build } from '../../package.json';
+import { pids } from './global';
 import { isRunningByPid } from './service/isRunningByPid';
 import {
   addDriveViaMonitor,
+  createVm as createVmService,
   exec,
   getGuestFsPid,
-  runGuestFs,
+  runGuestFs as runGuestFsService,
+  addNewVmDriveToGuestFs as addNewVmDriveToGuestFsService,
+  addNewDiskToGuestFs as addNewDiskToGuestFsService,
   runGuestFsAndAddDisks,
-  sleep
+  runVm as runVmService,
+  sleep,
+  delDrives,
 } from './services';
-import processConfig from './v1/processConfig';
 
 const os = require('os');
 const fs = require('fs').promises;
@@ -49,20 +49,51 @@ const isGustfsRunning = async (event) => {
   return isRunningByPid(pid);
 };
 
-const getVolumes = async (event) => {
-  let volumes;
+const getConfigList = async (event) => {
+  let configs;
   try {
-    volumes = await dataSource.getVolumes();
+    configs = await kymano.configListForIde();
   } catch (e) {
     console.log(':::::::::::', e);
   }
-  return volumes;
+  return configs;
 };
 
-const importLayer = async (event, path) => {
+const getMyVms = async (event) => {
+  let vms;
+  try {
+    vms = await kymano.getMyVms();
+    console.log('vms::', vms);
+  } catch (e) {
+    console.log('ERR:::::::::::', e);
+  }
+  return vms;
+};
+
+const getMyDisks = async (event) => {
+  let disks;
+  try {
+    disks = await dataSource.getMyDisks();
+  } catch (e) {
+    console.log(':::::::::::', e);
+  }
+  return disks;
+};
+
+const getMyVmDisks = async (event) => {
+  let disks;
+  try {
+    disks = await dataSource.getMyVmDisks();
+  } catch (e) {
+    console.log(':::::::::::', e);
+  }
+  return disks;
+};
+
+const importDisk = async (event, tmpPath, name) => {
   let layerPath;
   try {
-    layerPath = await kymano.importLayer(path);
+    layerPath = await kymano.importDisk(tmpPath, name);
   } catch (e) {
     fsNormal.writeFileSync(
       `${app.getPath('userData')}/error.log`,
@@ -79,13 +110,34 @@ const addImportedLayerToGuestfs = async (event, path) => {
   return added;
 };
 
+const delDisks = async (event) => {
+  const result = await delDrives();
+  return result;
+};
+
+const addNewVmDriveToGuestFs = async (event, vmDisk) => {
+  const added = await addNewVmDriveToGuestFsService(vmDisk);
+  return added;
+};
+
+const addNewDiskToGuestFs = async (event, disk) => {
+  const added = await addNewDiskToGuestFsService(disk);
+  return added;
+};
+
 const execInGuestfs = async (event, command) => {
   console.log('exec-in-guestfs');
-  const client = net.createConnection('/tmp/guestexec.sock');
+  // const myConfig = await kymano.getMyConfigById(1);
+  // const sockets = JSON.parse(myConfig.sockets);
+  const sockets = globalSockets.remote[1];
+  console.log('exec-in-guestfs sockets', sockets.guestexec);
+
+  const client = net.createConnection(sockets.guestexec);
 
   const result = await exec(command, client, false, globalMainWindow);
   return result;
 };
+
 const searchInGuestfs = async (event, command) => {
   const client = net.createConnection('/tmp/guestexec.sock');
 
@@ -93,130 +145,58 @@ const searchInGuestfs = async (event, command) => {
   return result;
 };
 
-const updateConfigs = async (event, someArgument) => {
-  const valueObject = {
-    cpu: 'manufacturer, brand, cores',
-    mem: 'total',
-    osInfo: 'platform, release, arch',
-    baseboard: 'model, manufacturer',
-    graphics: 'displays',
-  };
-
-  const sysInfo = await si.get(valueObject);
-  const mainDisplay = sysInfo.graphics.displays.filter(
-    (display: { main: boolean }) => display.main === true
-  )[0];
-
-  // const data = await fs.readFile(`${dirPath}repoList.yml`, 'utf8');
-  const data = read(`${getRepoListDir()}/repoList`, {
-    path: getRepoListDir(),
-  });
-
-  const body = await axios.get(
-    `https://codeload.${data.repos[0]}/zip/refs/heads/master`,
-    {
-      responseType: 'arraybuffer',
-    }
-  );
-
-  const zip = new AdmZip(body.data);
-
-  try {
-    await fs.access(`${app.getPath('userData')}/${data.repos[0]}`);
-  } catch (error) {
-    fs.mkdir(`${app.getPath('userData')}/${data.repos[0]}`, {
-      recursive: true,
-    });
-  }
-  zip.extractAllTo(`${app.getPath('userData')}/${data.repos[0]}`, true);
-  const latestRepo = read(
-    `${app.getPath('userData')}/${data.repos[0]}/repo-master/latest`,
-    {
-      path: `${app.getPath('userData')}/${data.repos[0]}/repo-master`,
-    }
-  );
-
-  const repoVersion = db
-    .prepare(`SELECT version FROM repo_v1 WHERE url = ?`)
-    .get(data.repos[0]);
-  console.log(`repoVersion:${repoVersion}`);
-  if (!repoVersion || Object.keys(repoVersion).length === 0) {
-    const repoId = db
-      .prepare(
-        'INSERT INTO repo_v1 (version, url, repoSystemVersion) VALUES (?, ?, ?)'
-      )
-      .run(
-        latestRepo.version,
-        data.repos[0],
-        latestRepo.systemVersion
-      ).lastInsertRowid;
-
-    await Promise.all(
-      Object.entries(latestRepo.configs).map(async ([index, _]) => {
-        console.log(`type: ${latestRepo.configs[index].type}`);
-        console.log(latestRepo.configs[index]);
-
-        if (latestRepo.configs[index].type === 'searchable') {
-          console.log(`config parsing start`);
-
-          const config = await (async () => {
-            try {
-              console.log(`config parsing try`);
-              return await processConfig(
-                latestRepo.configs[index].from,
-                `${app.getPath('userData')}/${data.repos[0]}/repo-master`
-              );
-            } catch (error) {
-              return undefined;
-            }
-          })();
-          console.log(config);
-          if (!config) {
-            return;
-          }
-
-          await addConfig(config, db, repoId, index);
-        }
-      })
-    );
-
-    console.log('searchResults');
-
-    const result = await getVmsFromConfig(db, version, sysInfo, mainDisplay);
-    return result;
-  }
-  if (repoVersion > latestRepo.systemVersion) {
-    db.prepare('UPDATE repo SET version = ? WHERE url = ?').run(
-      latestRepo.version,
-      data.repos[0]
-    );
-  }
-
-  const result = await getVmsFromConfig(db, version, sysInfo, mainDisplay);
-  return result;
+const updateConfigs = async () => {
+  await kymano.update();
 };
 
 const runGuestfs = async (event) => {
-  const pid = await runGuestFs(kymano);
+  const pid = await runGuestFsService(kymano);
   return pid;
 };
 
-export async function init(mainWindow) {
-  globalMainWindow = mainWindow;
-  const rows = await dataSource.getTables();
-  if (rows === 0) {
-    await dataSource.createTables();
-  }
+const createVm = async (event, configId) => {
+  const result = await createVmService(kymano, configId);
+  return result;
+};
 
-  runGuestFsAndAddDisks(kymano, dataSource);
+const runVm = async (event, vmNameId) => {
+  const result = await runVmService(kymano, vmNameId);
+  return result;
+};
+
+export async function init(mainWindow) {
+  try {
+    globalMainWindow = mainWindow;
+
+    const rows = await dataSource.getTables();
+    if (rows === 0) {
+      await dataSource.createTables();
+    }
+    await updateConfigs();
+
+    runGuestFsAndAddDisks(kymano, dataSource);
+  } catch (e) {
+    fsNormal.writeFileSync(
+      `${app.getPath('userData')}/error.log`,
+      `ERR: ${e.message}`
+    );
+  }
 
   ipcMain.handle('save-file', saveFile);
   ipcMain.handle('is-gustfs-running', isGustfsRunning);
-  ipcMain.handle('get-volumes', getVolumes);
-  ipcMain.handle('import-layer', importLayer);
+  ipcMain.handle('get-my-disks', getMyDisks);
+  ipcMain.handle('get-my-vm-disks', getMyVmDisks);
+  ipcMain.handle('import-disk', importDisk);
   ipcMain.handle('add-imported-layer-to-guestfs', addImportedLayerToGuestfs);
+  ipcMain.handle('add-new-vm-drive-to-guestfs', addNewVmDriveToGuestFs);
+  ipcMain.handle('add-new-disk-to-guestfs', addNewDiskToGuestFs);
   ipcMain.handle('exec-in-guestfs', execInGuestfs);
   ipcMain.handle('search-in-guestfs', searchInGuestfs);
   ipcMain.handle('run-guestfs', runGuestfs);
+  ipcMain.handle('create-vm', createVm);
+  ipcMain.handle('run-vm', runVm);
   ipcMain.handle('update-configs', updateConfigs);
+  ipcMain.handle('get-config-list', getConfigList);
+  ipcMain.handle('get-my-vms', getMyVms);
+  ipcMain.handle('del-disks', delDisks);
 }

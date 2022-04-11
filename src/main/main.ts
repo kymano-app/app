@@ -14,6 +14,7 @@ import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import 'regenerator-runtime/runtime';
+import { pids } from './global';
 import { init } from './ipcMainHandle';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -95,7 +96,7 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
+    width: 1080,
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
@@ -160,13 +161,40 @@ app.on('window-all-closed', () => {
 
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
     createWindow();
     init(mainWindow);
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
+    });
+    app.on('window-all-closed', async () => {
+      console.log('window-all-closed');
+      app.quit();
+    });
+
+    app.on('will-quit', async () => {
+      console.log('will-quit');
+    });
+
+    app.on('before-quit', async (event) => {
+      console.log('before-quit', pids);
+      event.preventDefault();
+      await Promise.all(
+        pids.map((pid) => {
+          // eslint-disable-next-line no-new
+          new Promise((resolve) => {
+            resolve(process.kill(pid));
+          });
+        })
+      );
+      console.log('before-quit1');
+      process.exit(0);
+    });
+
+    app.on('quit', async (event) => {
+      console.log('quit');
     });
   })
   .catch(console.log);

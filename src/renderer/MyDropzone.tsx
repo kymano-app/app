@@ -1,18 +1,14 @@
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { pushGuestFsQueue } from 'main/global';
+import { useState } from 'react';
 import { FileUploader } from 'react-drag-drop-files';
 import { useNavigate } from 'react-router-dom';
 import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
-import { useSearchResults } from './Context/SearchResultsContext';
 import {
-  addImportLayerToGuestFs,
-  execInGuestFs,
-  importLayer,
-  isGustFsRunning,
-  runGuestFs,
-  sendFile,
+  importDisk,
+  sendFile
 } from './renderer';
 import { upload } from './upload';
 
@@ -41,26 +37,34 @@ export function MyDropzone({ updateVolumesList }) {
   const handleChange = async (file: File) => {
     fileUploadProgressBar.setTotalFileSize(file.size);
 
-    const fileName = await upload(file, sendFile, setProgress);
-    console.log('fileName', fileName);
+    const tmpPath = await upload(file, sendFile, setProgress);
+    console.log('tmpPath', tmpPath);
 
-    const layerPath = await importLayer(fileName);
-    console.log('layerPath', layerPath);
+    const userLayersDiskPath = await importDisk(tmpPath, file.name);
+    console.log('userLayersDiskPath', userLayersDiskPath);
 
-    const gustfsRunning = await isGustFsRunning();
-    if (!gustfsRunning) {
-      console.log('gustfsRunning', gustfsRunning);
-      await runGuestFs();
-    }
+    const userLayersDiskPathSplitted = userLayersDiskPath.split('/');
+    const diskId =
+      userLayersDiskPathSplitted[userLayersDiskPathSplitted.length - 1];
+    console.log('diskId', diskId);
+    // const gustfsRunning = await isGustFsRunning();
+    // if (!gustfsRunning) {
+    //   console.log('gustfsRunning', gustfsRunning);
+    //   await runGuestFs();
+    // }
 
-    const added = await addImportLayerToGuestFs(layerPath);
-    console.log('added', added);
-    if (added) {
-      console.log('layerPath', layerPath);
-      const hash = layerPath.match(/([\w]+)$/)[1];
-      await execInGuestFs('/bin/guestfs');
-      updateVolumesList(hash.slice(0, 33));
-    }
+    pushGuestFsQueue({
+      name: 'addNewDiskToGuestFs',
+      param: diskId,
+    });
+    // const added = await addImportLayerToGuestFs(userLayersDiskPath);
+    // console.log('added', added);
+    // if (added) {
+    //   console.log('userLayersDiskPath', userLayersDiskPath);
+    //   const hash = userLayersDiskPath.match(/([\w]+)$/)[1];
+    //   await execInGuestFs('/bin/guestfs');
+    //   updateVolumesList(hash.slice(0, 33));
+    // }
     // showFileExplorer()
   };
 
@@ -96,6 +100,7 @@ export function MyDropzone({ updateVolumesList }) {
         left: 48,
         width: 'calc(100% - 48px)',
         padding: 10,
+        backgroundColor: 'white',
       }}
     >
       <FileUploader

@@ -7,9 +7,10 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import * as React from 'react';
 import { useNavigate } from 'react-router';
+import { useAddNewDiskToGuestFs } from './Context/AddNewDiskToGuestFs';
 import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
 import { MyDropzone } from './MyDropzone';
-import { getVolumes } from './renderer';
+import { getMyDisks, getMyVmDisks } from './renderer';
 
 function createData(name, calories, fat, carbs, protein) {
   return {
@@ -113,9 +114,11 @@ export default function Volumes() {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [progress, setProgress] = React.useState(0);
-  const [rows, setRows] = React.useState([]);
+  const [disks, setDisks] = React.useState([]);
+  const [vmDisks, setVmDisks] = React.useState([]);
   const fileUploadProgressBar = useFileUploadProgressBar();
   const navigate = useNavigate();
+  const addNewDiskToGuestFsUpdater = useAddNewDiskToGuestFs();
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -123,22 +126,43 @@ export default function Volumes() {
     setOrderBy(property);
   };
 
-  React.useEffect(() => {
-    async function fetchData() {
-      const volumes0 = await getVolumes();
-      console.log('volumes0', volumes0);
-      let volumes = [];
-      if (volumes0) {
-        volumes = volumes0.map((volume) => {
-          return { name: volume.hash, time: 0, size: 0 };
-        });
-      }
-      console.log('volumes', volumes);
-
-      setRows(volumes);
+  async function fetchData() {
+    const disks0 = await getMyDisks();
+    console.log('disks0', disks0);
+    let disks1 = [];
+    if (disks0) {
+      disks1 = disks0.map((disk) => {
+        return { id: disk.id, name: disk.name, time: 0, size: 0 };
+      });
     }
+    console.log('disks', disks1);
+
+    setDisks(disks1);
+
+    const vmDisks0 = await getMyVmDisks();
+    console.log('vmDisks0', vmDisks0);
+    const vmDisks1 = [];
+    if (vmDisks0) {
+      vmDisks0.forEach((vmDisks) => {
+        const disksParsed = JSON.parse(vmDisks.disks);
+        disksParsed.forEach((singleDisk) => {
+          vmDisks1.push({
+            id: vmDisks.id,
+            name: singleDisk,
+            time: 0,
+            size: 0,
+          });
+        });
+      });
+    }
+    console.log('vmDisks', vmDisks1);
+
+    setVmDisks(vmDisks1);
+  }
+
+  React.useEffect(() => {
     fetchData();
-  }, []);
+  }, [addNewDiskToGuestFsUpdater]);
 
   React.useEffect(() => {
     if (
@@ -153,10 +177,10 @@ export default function Volumes() {
     );
   }, [fileUploadProgressBar]);
 
-  const handleClick = (event, hash) => {
-    console.log('handleClick', hash);
-    hash = hash.slice(0, 33);
-    navigate(`/volume?hash=${hash}`, { replace: true });
+  const handleClick = (event, id) => {
+    console.log('handleClick', id);
+    // hash = hash.slice(0, 33);
+    navigate(`/volume?hash=${id}`, { replace: true });
   };
 
   const updateVolumesList = (hash: string) => {
@@ -183,7 +207,7 @@ export default function Volumes() {
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
-            rowCount={rows.length}
+            rowCount={disks.length}
           />
           <Box
             style={{
@@ -205,11 +229,38 @@ export default function Volumes() {
               </Box>
             )}
 
-            {rows.sort(getComparator(order, orderBy)).map((row, index) => {
+            {disks.sort(getComparator(order, orderBy)).map((row, index) => {
               return (
                 <Box
-                  onClick={(event) => handleClick(event, row.name)}
-                  key={row.name}
+                  onClick={(event) => handleClick(event, row.id)}
+                  key={row.id}
+                  style={{
+                    cursor: 'pointer',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'row',
+                  }}
+                >
+                  <Box padding="normal" style={{ padding: 12, flexGrow: 1 }}>
+                    {row.name}
+                  </Box>
+                  <Box padding="normal" align="left" style={{ padding: 12 }}>
+                    {row.time}
+                  </Box>
+                  <Box padding="normal" align="left" style={{ padding: 12 }}>
+                    {row.size}
+                  </Box>
+                </Box>
+              );
+            })}
+
+            {vmDisks.sort(getComparator(order, orderBy)).map((row, index) => {
+              return (
+                <Box
+                  onClick={(event) =>
+                    handleClick(event, `${row.id}-${row.name}`)
+                  }
+                  key={row.id}
                   style={{
                     cursor: 'pointer',
                     width: '100%',

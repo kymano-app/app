@@ -17,6 +17,38 @@ export function sendFile(bytes, tmpName) {
   });
 }
 
+export function addNewDiskToGuestFs(vmDisk) {
+  return new Promise((resolve) => {
+    console.log('addNewDiskToGuestFs', vmDisk);
+    window.electron
+      .invoke('add-new-disk-to-guestfs', vmDisk)
+      .then((result) => {
+        console.log('add-new-disk-to-guestfs', result);
+        resolve(result);
+        return result;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function addNewVmDriveToGuestFs(vmDisk) {
+  return new Promise((resolve) => {
+    console.log('addImportLayerToGuestFs', vmDisk);
+    window.electron
+      .invoke('add-new-vm-drive-to-guestfs', vmDisk)
+      .then((result) => {
+        console.log('add-new-vm-drive-to-guestfs', result);
+        resolve(result);
+        return result;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
 export function addImportLayerToGuestFs(layerPath) {
   return new Promise((resolve) => {
     console.log('addImportLayerToGuestFs', layerPath);
@@ -65,38 +97,124 @@ export function searchInGuestFs(command) {
   });
 }
 
-export function getVolumes() {
+export function createVm(configId) {
   return new Promise((resolve) => {
-    console.log('window.electron get-volumes');
-    window.electron.invoke('get-volumes')
+    console.log('window.electron create-vm', configId);
+    window.electron
+      .invoke('create-vm', configId)
       .then((result) => {
-        console.log('get-volumes result', result);
+        console.log('create-vm result', result);
         resolve(result);
         return true;
       })
       .catch((e) => {
         console.log('ERR::::', e);
       });
-    // window.electron
-    //   .invoke('get-volumes')
-    //   .then((result) => {
-    //     console.log('get-volumes result', result);
-    //     resolve(result);
-    //     return true;
-    //   })
-    //   .catch((e) => {
-    //     console.log('ERR::::', e);
-    //   });
   });
 }
 
-export function importLayer(patch) {
+export function runVm(vmNameId) {
   return new Promise((resolve) => {
-    console.log('window.electron import-layer', patch);
+    console.log('window.electron run-vm');
     window.electron
-      .invoke('import-layer', patch)
+      .invoke('run-vm', vmNameId)
       .then((result) => {
-        console.log('import-layer result', result);
+        console.log('run-vm result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getMyVmDisks() {
+  return new Promise((resolve) => {
+    console.log('window.electron getMyVmDisks');
+    window.electron
+      .invoke('get-my-vm-disks')
+      .then((result) => {
+        console.log('get-my-vm-disks result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+export function getMyDisks() {
+  return new Promise((resolve) => {
+    console.log('window.electron getMyDisks');
+    window.electron
+      .invoke('get-my-disks')
+      .then((result) => {
+        console.log('get-my-disks result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getConfigList() {
+  return new Promise((resolve) => {
+    console.log('window.electron get-config-list');
+    window.electron
+      .invoke('get-config-list')
+      .then((result) => {
+        console.log('get-config-list result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getMyVms() {
+  return new Promise((resolve) => {
+    console.log('window.electron get-my-vms');
+    window.electron
+      .invoke('get-my-vms')
+      .then((result) => {
+        console.log('get-my-vms result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function delDisks() {
+  return new Promise((resolve) => {
+    console.log('del-disks');
+    window.electron
+      .invoke('del-disks')
+      .then((result) => {
+        console.log('del-disks result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function importDisk(tmpPath, name) {
+  return new Promise((resolve) => {
+    console.log('window.electron import-disk', tmpPath, name);
+    window.electron
+      .invoke('import-disk', tmpPath, name)
+      .then((result) => {
+        console.log('import-disk result', result);
         resolve(result);
         return true;
       })

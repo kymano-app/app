@@ -1,11 +1,15 @@
 import { app } from 'electron';
+import { globalSockets, Kymano } from 'kymano';
 import net from 'net';
 import path from 'path';
 import readline from 'readline';
 import { build } from '../../package.json';
+import getArch from './-CLI/commands/service/getArch';
+import { delFromDiskIds, diskIds, pids } from './global';
 
 const fs = require('fs').promises;
 const fsNormal = require('fs');
+
 const appData = app.getPath('appData');
 
 app.setPath('userData', path.join(appData, build.productName));
@@ -53,32 +57,67 @@ export async function exec(text, client, instantResult, mainWindow) {
   return result;
 }
 
-export async function runGuestFs(kymano): Promise<number | null> {
+export async function runGuestFs(kymano: Kymano): Promise<number | null> {
   try {
-    const response = await kymano.run('guestfs', []);
-    const { pid } = response[0].child;
-    fsNormal.writeFileSync(
-      path.join(app.getPath('userData'), 'guestfs.pid'),
-      pid.toString()
-    );
-    return pid;
+    const myConfig = await kymano.getMyConfigById(1);
+    if (!myConfig) {
+      await kymano.createVm(getArch() === 'arm64' ? 1 : 2);
+      const response = await kymano.runVm(1);
+      pids.push(response[0].child.pid);
+    } else {
+      const response = await kymano.runVm(1);
+      pids.push(response[0].child.pid);
+    }
+    // const response = await kymano.run('guestfs', []);
+    // const { pid } = response[0].child;
+    // fsNormal.writeFileSync(
+    //   path.join(app.getPath('userData'), 'guestfs.pid'),
+    //   pid.toString()
+    // );
+    // return pid;
   } catch (e) {
     fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
   }
 
   return null;
-};
+}
 
-export async function addDriveViaMonitor (path) {
-  const client = new net.Socket();
+export async function createVm(kymano, configId): Promise<number | null> {
+  try {
+    const vmNameId = await kymano.createVm(configId);
+    return vmNameId;
+  } catch (e) {
+    fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
+  }
+
+  return null;
+}
+
+export async function runVm(kymano, vmNameId) {
+  try {
+    const response = await kymano.runVm(vmNameId);
+    pids.push(response[0].child.pid);
+    console.log('response:::::::', response);
+
+    return response[1];
+  } catch (e) {
+    fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
+  }
+}
+
+export async function addDriveViaMonitor(diskPath) {
+  console.log('addDriveViaMonitor:::::', path);
+  // const myConfig = await kymano.getMyConfigById(1);
+  // const sockets = JSON.parse(myConfig.sockets);
+  const sockets = globalSockets.remote[1];
+  console.log('myConfig sockets:::::', sockets);
+  const client = net.createConnection(sockets.monitor);
   const disk = `disk${Math.floor(Math.random() * 100000)}`;
   const device = `${disk}d`;
-  const hash = path.match(/([\w]+)$/)[1];
+  const diskName = path.basename(diskPath);
 
-  client.connect(5551, 'localhost', function () {
-    client.write(`drive_add 0 "if=none,file=${path},id=${disk}"\n`, () => {
-      console.log('move forward command sent');
-    });
+  client.write(`drive_add 0 "if=none,file=${diskPath},id=${disk}"\n`, () => {
+    console.log('drive_add command sent');
   });
 
   return new Promise((resolve) => {
@@ -94,12 +133,13 @@ export async function addDriveViaMonitor (path) {
         deviceAddcommandAccepted = true;
         console.log('deviceAddcommandAccepted');
         client.destroy();
-        sleepAndResolve(5, resolve);
+        sleepAndResolve(1, resolve);
       } else if (line === 'OK' && !deviceAddcommandAccepted) {
         client.write(
-          `device_add usb-storage,serial=KY-${hash},drive=${disk},id=${device}\n`,
+          `device_add usb-storage,serial=KY-${diskName},drive=${disk},id=${device}\n`,
           () => {
             console.log('client.write device_add');
+            diskIds.push(device);
           }
         );
       }
@@ -107,23 +147,81 @@ export async function addDriveViaMonitor (path) {
   });
 }
 
+export async function delDrivesViaMonitor(diskId) {
+  const sockets = globalSockets.remote[1];
+  const client = net.createConnection(sockets.monitor);
+  console.log('delDrivesViaMonitor:::::', sockets.monitor);
+
+  client.write(`device_del ${diskId}\n`, () => {
+    delFromDiskIds(diskId);
+  });
+
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: client });
+    rl.on('line', function (line) {
+      console.log('delDrivesViaMonitor line:', line);
+      if (/device_del/.test(line)) {
+        console.log('device_del line:', line);
+        client.destroy();
+        resolve();
+      }
+    });
+  });
+}
+
+export async function delDrives() {
+  diskIds.forEach(async (diskId) => {
+    await delDrivesViaMonitor(diskId);
+  });
+}
+
+export async function addNewVmDriveToGuestFs(vmDisk) {
+  return addDriveViaMonitor(
+    `${app.getPath('userData')}/user_layers/vm/${vmDisk}`
+  );
+}
+
+export async function addNewDiskToGuestFs(disk) {
+  return addDriveViaMonitor(
+    `${app.getPath('userData')}/user_layers/disk/${disk}`
+  );
+}
+
+export async function delDrivesFromGuestFs() {
+  return delDriveViaMonitor();
+}
+
 export async function runGuestFsAndAddDisks(kymano, dataSource) {
   await runGuestFs(kymano);
-  console.log('runGuestFs');
-  await sleep(1);
-  const volumes = await dataSource.getVolumes();
-  console.log('volumes:::', volumes);
+  // console.log('runGuestFsAndAddDisks');
+  // await sleep(1);
+  // const myDisks = await dataSource.getMyDisks();
+  // const myVmDisks = await dataSource.getMyVmDisks();
+  // console.log('disks:::', myDisks);
+  // console.log('myVmDisks:::', myVmDisks);
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const volume of volumes) {
-    console.log('volume:', volume);
-    // eslint-disable-next-line no-await-in-loop
-    await addDriveViaMonitor(
-      `${app.getPath('userData')}/layers/${volume.hash}`
-    );
-  }
-  console.log('addDriveViaMonitor');
-};
+  // // eslint-disable-next-line no-restricted-syntax
+  // for (const disk of myDisks) {
+  //   console.log('disk:', disk);
+  //   // eslint-disable-next-line no-await-in-loop
+  //   await addDriveViaMonitor(
+  //     `${app.getPath('userData')}/user_layers/disk/${disk.id}`
+  //   );
+  // }
+  // // eslint-disable-next-line no-restricted-syntax
+  // for (const vm of myVmDisks) {
+  //   console.log('disk:', vm);
+  //   const vmDisks = JSON.parse(vm.disks);
+  //   // eslint-disable-next-line no-restricted-syntax
+  //   for (const vmDisk of vmDisks) {
+  //     // eslint-disable-next-line no-await-in-loop
+  //     await addDriveViaMonitor(
+  //       `${app.getPath('userData')}/user_layers/vm/${vm.id}-${vmDisk}`
+  //     );
+  //   }
+  // }
+  // console.log('addDriveViaMonitor');
+}
 
 export function getGuestFsPid() {
   return fsNormal.readFileSync(

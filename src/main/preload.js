@@ -5,13 +5,21 @@ contextBridge.exposeInMainWorld('electron', {
     const validChannels = [
       'save-file',
       'is-gustfs-running',
-      'get-volumes',
-      'import-layer',
+      'get-my-disks',
+      'get-my-vm-disks',
+      'get-config-list',
+      'import-disk',
       'add-imported-layer-to-guestfs',
+      'add-new-vm-drive-to-guestfs',
+      'add-new-disk-to-guestfs',
       'exec-in-guestfs',
       'search-in-guestfs',
       'run-guestfs',
+      'create-vm',
+      'run-vm',
       'update-configs',
+      'get-my-vms',
+      'del-disks',
     ];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, ...params);

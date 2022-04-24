@@ -8,7 +8,8 @@ import InitUpdate from './InitUpdate';
 import LeftMenu from './LeftMenu';
 import Main from './Main';
 import Repos from './Repos';
-import Search from './Search';
+import SearchFiles from './SearchFiles';
+import SearchText from './SearchText';
 import Volume from './Volume';
 import Volumes from './Volumes';
 
@@ -36,7 +37,8 @@ export default function App() {
               <Routes>
                 <Route path="volumes" element={<Volumes />} />
                 <Route path="volume" element={<Volume />} />
-                <Route path="search" element={<Search />} />
+                <Route path="searchFiles" element={<SearchFiles />} />
+                <Route path="searchText" element={<SearchText/>} />
                 <Route path="repos" element={<Repos />} />
                 <Route path="/index.html" element={<Main />} />
               </Routes>

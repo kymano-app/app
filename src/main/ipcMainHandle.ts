@@ -1,25 +1,25 @@
 import Database from 'better-sqlite3';
 import 'core-js/stable';
 import { app, ipcMain } from 'electron';
-import { DataSource, Kymano, QemuCommands, globalSockets } from 'kymano';
+import { DataSource, globalSockets, Kymano, QemuCommands } from 'kymano';
 import net from 'net';
 import path from 'path';
 import 'regenerator-runtime/runtime';
 import { build } from '../../package.json';
-import { pids } from './global';
+import { lenghtSocketData, pushSocketData, socketData } from './global';
 import { isRunningByPid } from './service/isRunningByPid';
 import {
   addDriveViaMonitor,
+  addNewDiskToGuestFs as addNewDiskToGuestFsService,
+  addNewVmDriveToGuestFs as addNewVmDriveToGuestFsService,
   createVm as createVmService,
+  delDrives,
   exec,
   getGuestFsPid,
   runGuestFs as runGuestFsService,
-  addNewVmDriveToGuestFs as addNewVmDriveToGuestFsService,
-  addNewDiskToGuestFs as addNewDiskToGuestFsService,
   runGuestFsAndAddDisks,
   runVm as runVmService,
-  sleep,
-  delDrives,
+  sleep
 } from './services';
 
 const os = require('os');
@@ -125,23 +125,133 @@ const addNewDiskToGuestFs = async (event, disk) => {
   return added;
 };
 
-const execInGuestfs = async (event, command) => {
-  console.log('exec-in-guestfs');
+const client = {};
+function createConnection(worker: string) {
+  const sockets = globalSockets.remote[1];
+  let fullData = '';
+  console.log('sockets', sockets);
+  if (!client[worker]) {
+    client[worker] = net.createConnection(sockets[worker]);
+    console.log('new connection');
+    client[worker].on('error', async function (error) {
+      await sleep(1);
+      console.log('error, trying again', error);
+      client[worker] = createConnection(worker);
+    });
+    client[worker].on('data', (data) => {
+      fullData += data.toString();
+      const nb = data.toString().search(/\0/);
+      const lastChar = data[data.length - 1];
+      console.log('lastChar: ', lastChar);
+      if (nb != -1) {
+        const dataArr = fullData.split('\0');
+        let arr = [];
+        if (lastChar !== 0) {
+          console.log('lastChar!=0: ', lastChar);
+          arr = dataArr.slice(0, dataArr.length - 2);
+          fullData = dataArr[dataArr.length - 1];
+          console.log('fullData add:', dataArr[dataArr.length - 1]);
+        } else {
+          fullData = '';
+          arr = dataArr.slice(0, dataArr.length - 1);
+        }
+        pushSocketData(worker, arr);
+      }
+      // if (data.toString().split('\0').length > 1) {
+      //   const dataArr = fullData.split('\0');
+      //   fullData = '';
+      //   console.log('data:::', dataArr, worker);
+      //   pushSocketData(worker, dataArr);
+      // }
+    });
+  }
+
+  return client[worker];
+}
+
+const execInGuestfs = async (event, command, worker) => {
+  console.log('exec-in-guestfs', command, worker);
   // const myConfig = await kymano.getMyConfigById(1);
   // const sockets = JSON.parse(myConfig.sockets);
-  const sockets = globalSockets.remote[1];
-  console.log('exec-in-guestfs sockets', sockets.guestexec);
+  // const sockets = globalSockets.remote[1];
+  // console.log('exec-in-guestfs sockets', sockets.guestexec);
 
-  const client = net.createConnection(sockets.guestexec);
+  if (!client[worker]) {
+    console.log('NO client');
+    client[worker] = createConnection(worker);
+  }
+  // try {
+  //   client = net.createConnection(sockets.guestexec);
+  // } catch (err) {
+  //   console.log('err::::::::::', err);
+  // }
+  // client.on('error', function (err) {
+  //   console.log('err2::::::::::', err);
+  // });
+  // if (rlSearchInGuestFs) {
+  // const [result0, rl0] = exec(
+  //   'kill -9 `pidof grep`; kill -9 `pidof find`',
+  //   client,
+  //   false,
+  //   globalMainWindow
+  // );
+  // await result0;
+  // rl0.close();
+  // }
+  while (lenghtSocketData(worker) !== 0) {
+    console.log('wait:::', worker, socketData[worker]);
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(0.5);
+  }
 
-  const result = await exec(command, client, false, globalMainWindow);
+  const result = await exec(
+    command,
+    client[worker],
+    false,
+    globalMainWindow,
+    worker
+  );
+  // setRlSearchInGuestFs(rl);
+  console.log('finished', result);
+
   return result;
 };
 
-const searchInGuestfs = async (event, command) => {
-  const client = net.createConnection('/tmp/guestexec.sock');
+const searchInGuestfs = async (event, command, worker) => {
+  console.log('searchInGuestfs', command, worker);
 
-  const result = await exec(command, client, true, globalMainWindow);
+  // const sockets = globalSockets.remote[1];
+
+  // const client = net.createConnection(sockets.guestexec);
+  // client = createConnection();
+  if (!client[worker]) {
+    console.log('NO client');
+    client[worker] = createConnection(worker);
+  }
+
+  // const [result0, rl0] = exec(
+  //   'kill -9 `pidof grep`; kill -9 `pidof find`',
+  //   client,
+  //   false,
+  //   globalMainWindow
+  // );
+  // await result0;
+  // rl0.close();
+  // console.log('globalMainWindow', globalMainWindow);
+  while (lenghtSocketData(worker) !== 0) {
+    console.log('wait:::', worker, socketData[worker]);
+    await sleep(0.5);
+  }
+
+  const result = await exec(
+    command,
+    client[worker],
+    true,
+    globalMainWindow,
+    worker
+  );
+  // setRlSearchInGuestFs(rl);
+  console.log('finished', result);
   return result;
 };
 

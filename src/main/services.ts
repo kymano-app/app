@@ -5,7 +5,14 @@ import path from 'path';
 import readline from 'readline';
 import { build } from '../../package.json';
 import getArch from './-CLI/commands/service/getArch';
-import { delFromDiskIds, diskIds, pids } from './global';
+import {
+  cleanSocketData,
+  delFromDiskIds,
+  diskIds,
+  getCmdId,
+  pids,
+  shiftSocketData,
+} from './global';
 
 const fs = require('fs').promises;
 const fsNormal = require('fs');
@@ -32,29 +39,69 @@ export async function sleepAndResolve(
   setResolve(true);
 }
 
-export async function readLine(rl, client, instantResult, mainWindow) {
+export async function readLine(
+  instantResult,
+  mainWindow,
+  command,
+  cmdId,
+  worker
+) {
+  console.log('readLine:::::', cmdId, worker, command);
   const arr = [];
-  return new Promise((resolve) => {
-    rl.on('line', function (line) {
+  return new Promise(async (resolve) => {
+    while (true) {
+      const line = shiftSocketData(worker);
+      // console.log('line:::', cmdId, worker, line);
+      if (!line) {
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(0.1);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
       if (instantResult) {
-        mainWindow.webContents.send('response-cmd', line);
+        try {
+          mainWindow.webContents.send('response-cmd', line);
+        } catch (err) {
+          console.log('err::::::::', err);
+        }
       } else {
+        console.log('arr.push:::', cmdId, worker, line);
         arr.push(line);
       }
-      if (line === 'end') {
-        client.destroy();
+      if (line === `end${cmdId}`) {
+        console.log('resolve:::', cmdId);
+        // client.destroy();
+        cleanSocketData(worker);
         resolve(arr);
+        console.log('break:::', cmdId);
+        break;
       }
-    });
+    }
   });
 }
 
-export async function exec(text, client, instantResult, mainWindow) {
-  client.write(text);
+export async function exec(command, client, instantResult, mainWindow, worker) {
+  const cmdId = getCmdId();
 
-  const rl = readline.createInterface({ input: client });
-  const result = await readLine(rl, client, instantResult, mainWindow);
-  return result;
+  console.log('exec start', command, cmdId);
+  let result;
+  try {
+    await client.write(`${cmdId}#kymano#${command}`);
+
+    // const rl = readline.createInterface({ input: client });
+    console.log('readLine', cmdId);
+    // new Promise((resolve) =>
+    //   setTimeout(() => {
+    //     rl.close();
+    //     resolve();
+    //   }, 10 * 1000)
+    // );
+    result = await readLine(instantResult, mainWindow, command, cmdId, worker);
+    console.log('readLine result', result, cmdId);
+    return result;
+  } catch (err) {
+    console.log('err!::::::', err);
+  }
 }
 
 export async function runGuestFs(kymano: Kymano): Promise<number | null> {

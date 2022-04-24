@@ -162,7 +162,8 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(async () => {
-    createWindow();
+    await createWindow();
+    console.log('mainWindow:::', mainWindow);
     init(mainWindow);
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
@@ -196,5 +197,9 @@ app
     app.on('quit', async (event) => {
       console.log('quit');
     });
+    process.on('uncaughtException', function (err) {
+      console.log(':::::::::::::::uncaughtException:::::::::::::::::::', err);
+    });
+    process.on('warning', (e) => console.warn('warn:::', e.stack));
   })
   .catch(console.log);

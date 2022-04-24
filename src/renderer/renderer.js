@@ -65,11 +65,11 @@ export function addImportLayerToGuestFs(layerPath) {
   });
 }
 
-export function execInGuestFs(command) {
+export function execInGuestFs(command, worker = 'worker1') {
   return new Promise((resolve) => {
-    console.log('execInGuestFs', command);
+    console.log('execInGuestFs', command, worker);
     window.electron
-      .invoke('exec-in-guestfs', command)
+      .invoke('exec-in-guestfs', command, worker)
       .then((result) => {
         console.log('exec-in-guestfs result::', result);
         resolve(result);
@@ -81,11 +81,11 @@ export function execInGuestFs(command) {
   });
 }
 
-export function searchInGuestFs(command) {
+export function searchInGuestFs(command, worker) {
   return new Promise((resolve) => {
-    console.log('execInGuestFs', command);
+    console.log('search-in-guestfs', command, worker);
     window.electron
-      .invoke('search-in-guestfs', command)
+      .invoke('search-in-guestfs', command, worker)
       .then((result) => {
         console.log('search-in-guestfs', result);
         resolve(result);

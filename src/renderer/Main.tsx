@@ -1,22 +1,37 @@
-import { CardActionArea, CardActions } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { CardActionArea, CardActions, LinearProgress } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import * as React from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import MainMenu from './Main/Menu';
 import { MyDropzone } from './MyDropzone';
-import { getMyVms, runVm } from './renderer';
+import {
+  getMyConfigForUpdate,
+  getMyVmsWithoutInternals,
+  runVm,
+} from './renderer';
+import Badge from '@mui/material/Badge';
+import { useLaunchingVmProcess } from './Context/LaunchingVmProcessContext';
+import VmCard from './Main/VmCard';
 
-// const { spawn } = require('child_process');
-
+export interface DialogTitleProps {
+  id: string;
+  children?: React.ReactNode;
+  onClose: () => void;
+}
 export default function Main() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [vms, setVms] = React.useState([]);
+  const [vms, setVms] = useState([]);
+  const [progress, setProgress] = useState();
+  const [progressType, setProgressType] = useState();
+  const [progressName, setProgressName] = useState();
   const navigate = useNavigate();
 
   // spawn('/opt/homebrew/bin/socat', [
@@ -105,15 +120,26 @@ export default function Main() {
     navigate(`/volumes`, { replace: true });
   };
 
-  React.useEffect(() => {
-    async function fetchData() {
-      const vms0 = await getMyVms();
-      if (vms0) {
-        console.log('vms', vms0);
-        setVms(vms0);
-      }
+  async function fetchData() {
+    const vms0 = await getMyVmsWithoutInternals();
+    if (vms0) {
+      console.log('vms', vms0);
+      setVms(vms0);
     }
+  }
 
+  async function fetchMyConfigsForUpdate() {
+    const cnf = await getMyConfigForUpdate();
+    if (cnf) {
+      console.log('getMyConfigForUpdate', cnf);
+    }
+  }
+
+  useEffect(() => {
+    fetchMyConfigsForUpdate();
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -122,6 +148,39 @@ export default function Main() {
       await runVm(vmNameId);
     }
     runVmAsync();
+  };
+
+  const [editingVm, setEditingVm] = useState();
+  const handleOpenMenu = (
+    vmName,
+    myVmId,
+    type,
+    updated,
+    releaseDescription,
+    id,
+    configHistoryId,
+    version,
+    status,
+    pid,
+    event
+  ) => {
+    setEditingVm({
+      vmName,
+      myVmId,
+      type,
+      updated,
+      releaseDescription,
+      id,
+      configHistoryId,
+      version,
+      status,
+      pid,
+      eventCurrentTarget: event.currentTarget,
+    });
+  };
+
+  const handleReRenderAll = () => {
+    fetchData();
   };
 
   return (
@@ -135,63 +194,42 @@ export default function Main() {
     >
       <Grid container spacing={1}>
         {vms.map((vm, index) => {
-          const { name, my_vm_name_id, picture, description } = vm;
+          const {
+            vm_name,
+            my_vm_id,
+            picture,
+            type,
+            updated,
+            releaseDescription,
+            id,
+            config_history_id,
+            status,
+            pid,
+            version,
+          } = vm;
           return (
             <Grid item>
-              <Card sx={{ maxWidth: 345 }}>
-                <CardActionArea>
-                  {picture ? (
-                    <CardMedia component="img" height="140" image={picture} />
-                  ) : (
-                    <Box
-                      height="140px"
-                      style={{ backgroundColor: '#f0f0f0' }}
-                    />
-                  )}
-                  <CardContent style={{ height: 110 }}>
-                    <Typography
-                      gutterBottom
-                      variant="h5"
-                      component="div"
-                      style={{
-                        whiteSpace: 'nowrap',
-                        width: 300,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      style={{
-                        overflow: 'hidden',
-                        display: '-webkit-box',
-                        webkitLineClamp: '2',
-                        width: 300,
-                        webkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {description}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-                <CardActions>
-                  <Button
-                    size="small"
-                    color="primary"
-                    onClick={() => runVmHandler(my_vm_name_id)}
-                  >
-                    Run
-                  </Button>
-                </CardActions>
-              </Card>
+              <VmCard
+                vm_name={vm_name}
+                my_vm_id={my_vm_id}
+                picture={picture}
+                type={type}
+                updated={updated}
+                releaseDescription={releaseDescription}
+                id={id}
+                config_history_id={config_history_id}
+                status={status}
+                pid={pid}
+                version={version}
+              />
             </Grid>
           );
         })}
       </Grid>
       <MyDropzone updateVolumesList={updateVolumesList} />
+      {editingVm && (
+        <MainMenu editingVm={editingVm} handleReRenderAll={handleReRenderAll} />
+      )}
     </Box>
   );
 }

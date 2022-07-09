@@ -129,6 +129,22 @@ export function runVm(vmNameId) {
   });
 }
 
+export function getDrivesNames(myConfigId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-drives-names');
+    window.electron
+      .invoke('get-drives-names', myConfigId)
+      .then((result) => {
+        console.log('get-drives-names result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
 export function getMyVmDisks() {
   return new Promise((resolve) => {
     console.log('window.electron getMyVmDisks');
@@ -176,7 +192,23 @@ export function getConfigList() {
   });
 }
 
-export function getMyVms() {
+export function rollbackConfigInMyConfig(myConfigId, historyId) {
+  return new Promise((resolve) => {
+    console.log('window.electron rollback-config-in-my-config');
+    window.electron
+      .invoke('rollback-config-in-my-config', myConfigId, historyId)
+      .then((result) => {
+        console.log('rollback-config-in-my-config result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getMyVmsWithoutInternals() {
   return new Promise((resolve) => {
     console.log('window.electron get-my-vms');
     window.electron
@@ -185,6 +217,119 @@ export function getMyVms() {
         console.log('get-my-vms result', result);
         resolve(result);
         return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getHistoryIdFromConfig(configId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-history-id-from-config');
+    window.electron
+      .invoke('get-history-id-from-config', configId)
+      .then((result) => {
+        console.log('get-history-id-from-config result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getConfigHistoryById(configHistoryId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-config-history-by-id');
+    window.electron
+      .invoke('get-config-history-by-id', configHistoryId)
+      .then((result) => {
+        console.log('get-config-history-by-id result', configHistoryId);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getConfigById(configId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-config-by-id');
+    window.electron
+      .invoke('get-config-by-id', configId)
+      .then((result) => {
+        console.log('get-config-by-id result', configId);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+
+export function getLatestConfigByHistoryId(historyId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-latest-config-by-history-id');
+    window.electron
+      .invoke('get-latest-config-by-history-id', historyId)
+      .then((result) => {
+        console.log('get-latest-config-by-history-id result', historyId);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getPreviousIdFromConfigHistory(configHistoryId) {
+  return new Promise((resolve) => {
+    console.log('window.electron get-previous-id-from-config-history');
+    window.electron
+      .invoke('get-previous-id-from-config-history', configHistoryId)
+      .then((result) => {
+        console.log('get-previous-id-from-config-history result', result);
+        resolve(result);
+        return result;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+
+export function updateConfigInMyConfig(configId) {
+  return new Promise((resolve) => {
+    console.log('window.electron update-config-in-my-config', configId);
+    window.electron
+      .invoke('update-config-in-my-config', configId)
+      .then((result) => {
+        console.log('update-config-in-my-config result', result);
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log('ERR::::', e);
+      });
+  });
+}
+
+export function getMyConfigForUpdate() {
+  return new Promise((resolve) => {
+    window.electron
+      .invoke('get-my-config-for-update')
+      .then((result) => {
+        console.log('get-my-config-for-update result', result);
+        resolve(result);
+        return result;
       })
       .catch((e) => {
         console.log('ERR::::', e);
@@ -204,6 +349,22 @@ export function delDisks() {
       })
       .catch((e) => {
         console.log('ERR::::', e);
+      });
+  });
+}
+
+export function changeVmName(name, id) {
+  return new Promise((resolve) => {
+    console.log(name);
+    console.log(id);
+    window.electron
+      .invoke('change-vm-name', name, id)
+      .then((result) => {
+        resolve(result);
+        return true;
+      })
+      .catch((e) => {
+        console.log(e);
       });
   });
 }

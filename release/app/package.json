@@ -15,7 +15,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^7.5.1",
+    "better-sqlite3": "^7.5.3",
     "kymano": "^0.0.64",
     "tar": "^6.1.11"
   }

@@ -8,6 +8,7 @@ import {
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router';
 import { useAddNewDiskToGuestFs } from './Context/AddNewDiskToGuestFs';
+import { useLaunchingVmProcess } from './Context/LaunchingVmProcessContext';
 import { useSearchResults } from './Context/SearchResultsContext';
 import {
   addNewDiskToGuestFs,
@@ -22,6 +23,7 @@ import {
 
 export default function InitUpdate() {
   const searchResults = useSearchResults();
+  const launchingVmProcess = useLaunchingVmProcess();
   const location = useLocation();
   const prevLocation = useRef();
   const addNewDiskToGuestFsUpdater = useAddNewDiskToGuestFs();
@@ -64,6 +66,64 @@ export default function InitUpdate() {
       console.log('searchResults.set(response)', response);
       searchResults.set(response);
     });
+
+    window.electron.ipcRenderer.on(
+      'downloading-started',
+      (type, name, myConfigId) => {
+        console.log('downloading-started', type, name);
+        const obj = {};
+        obj[myConfigId] = {
+          process: 'downloading-started',
+          type,
+          name,
+          myConfigId,
+        };
+        launchingVmProcess.set(obj);
+      }
+    );
+
+    window.electron.ipcRenderer.on(
+      'downloading',
+      (type, name, myConfigId, percent) => {
+        console.log('downloading', type, name, percent);
+        const obj = {};
+        obj[myConfigId] = {
+          process: 'downloading',
+          type,
+          name,
+          percent,
+        };
+        launchingVmProcess.set(obj);
+      }
+    );
+
+    window.electron.ipcRenderer.on(
+      'downloading-finished',
+      (type, name, myConfigId) => {
+        console.log('downloading-finished', type, name);
+        const obj = {};
+        obj[myConfigId] = {
+          process: 'downloading-finished',
+          type,
+          name,
+        };
+        launchingVmProcess.set(obj);
+      }
+    );
+
+    window.electron.ipcRenderer.on(
+      'downloading-error',
+      (type, name, myConfigId) => {
+        console.log('downloading-error', type, name);
+        const obj = {};
+        obj[myConfigId] = {
+          process: 'downloading-error',
+          type,
+          name,
+        };
+        launchingVmProcess.set(obj);
+      }
+    );
   }, []);
 
   useEffect(() => {

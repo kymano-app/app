@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useNavigate } from 'react-router';
 import { useFileUploadProgressBar } from './Context/FileUploadProgressBarContext';
-import { addDriveViaMonitor, addNewVmDriveToGuestFs, createVm, execInGuestFs, getConfigList, runVm } from './renderer';
+import { addDriveViaMonitor, addNewVmDriveToGuestFs, createVm, execInGuestFs, getConfigList, getDrivesNames, runVm } from './renderer';
 
 export default function Repos() {
   const [order, setOrder] = React.useState('asc');
@@ -44,7 +44,9 @@ export default function Repos() {
   const runNewVm = (configId) => {
     async function runNewVmAsync() {
       const myConfigId = await createVm(configId);
-      const disks = await runVm(myConfigId);
+      navigate(`/index.html`);
+      await runVm(myConfigId);
+      const disks = await getDrivesNames(myConfigId);
       console.log('resp', disks, myConfigId);
       await addNewVmDriveToGuestFs(`${myConfigId}-${disks}`);
       await new Promise((resolve) => setTimeout(resolve, 1 * 1000));

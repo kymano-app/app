@@ -3,6 +3,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AddNewDiskToGuestFsProvider } from './Context/AddNewDiskToGuestFs';
 import { FileUploadProgressBarProvider } from './Context/FileUploadProgressBarContext';
+import { LaunchingVmProcessProvider } from './Context/LaunchingVmProcessContext';
 import { SearchResultsProvider } from './Context/SearchResultsContext';
 import InitUpdate from './InitUpdate';
 import LeftMenu from './LeftMenu';
@@ -27,24 +28,26 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <SearchResultsProvider>
-        <FileUploadProgressBarProvider>
-          <AddNewDiskToGuestFsProvider>
-            <BrowserRouter>
-              <CssBaseline />
-              <InitUpdate />
-              <LeftMenu />
+        <LaunchingVmProcessProvider>
+          <FileUploadProgressBarProvider>
+            <AddNewDiskToGuestFsProvider>
+              <BrowserRouter>
+                <CssBaseline />
+                <InitUpdate />
+                <LeftMenu />
 
-              <Routes>
-                <Route path="volumes" element={<Volumes />} />
-                <Route path="volume" element={<Volume />} />
-                <Route path="searchFiles" element={<SearchFiles />} />
-                <Route path="searchText" element={<SearchText/>} />
-                <Route path="repos" element={<Repos />} />
-                <Route path="/index.html" element={<Main />} />
-              </Routes>
-            </BrowserRouter>
-          </AddNewDiskToGuestFsProvider>
-        </FileUploadProgressBarProvider>
+                <Routes>
+                  <Route path="volumes" element={<Volumes />} />
+                  <Route path="volume" element={<Volume />} />
+                  <Route path="searchFiles" element={<SearchFiles />} />
+                  <Route path="searchText" element={<SearchText />} />
+                  <Route path="repos" element={<Repos />} />
+                  <Route path="/index.html" element={<Main />} />
+                </Routes>
+              </BrowserRouter>
+            </AddNewDiskToGuestFsProvider>
+          </FileUploadProgressBarProvider>
+        </LaunchingVmProcessProvider>
       </SearchResultsProvider>
     </ThemeProvider>
   );

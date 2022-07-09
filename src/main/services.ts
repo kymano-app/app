@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { globalSockets, Kymano } from 'kymano';
+import { globalSockets, Kymano, electronWindow } from 'kymano';
 import net from 'net';
 import path from 'path';
 import readline from 'readline';
@@ -41,7 +41,6 @@ export async function sleepAndResolve(
 
 export async function readLine(
   instantResult,
-  mainWindow,
   command,
   cmdId,
   worker
@@ -60,7 +59,7 @@ export async function readLine(
       }
       if (instantResult) {
         try {
-          mainWindow.webContents.send('response-cmd', line);
+          electronWindow.global.webContents.send('response-cmd', line);
         } catch (err) {
           console.log('err::::::::', err);
         }
@@ -80,7 +79,7 @@ export async function readLine(
   });
 }
 
-export async function exec(command, client, instantResult, mainWindow, worker) {
+export async function exec(command, client, instantResult, worker) {
   const cmdId = getCmdId();
 
   console.log('exec start', command, cmdId);
@@ -96,7 +95,7 @@ export async function exec(command, client, instantResult, mainWindow, worker) {
     //     resolve();
     //   }, 10 * 1000)
     // );
-    result = await readLine(instantResult, mainWindow, command, cmdId, worker);
+    result = await readLine(instantResult, command, cmdId, worker);
     console.log('readLine result', result, cmdId);
     return result;
   } catch (err) {
@@ -110,9 +109,11 @@ export async function runGuestFs(kymano: Kymano): Promise<number | null> {
     if (!myConfig) {
       await kymano.createVm(getArch() === 'arm64' ? 1 : 2);
       const response = await kymano.runVm(1);
+      console.log(`src/main/services.ts:114 response`, response);
       pids.push(response[0].child.pid);
     } else {
       const response = await kymano.runVm(1);
+      console.log(`src/main/services.ts:114 response`, response);
       pids.push(response[0].child.pid);
     }
     // const response = await kymano.run('guestfs', []);
@@ -146,7 +147,7 @@ export async function runVm(kymano, vmNameId) {
     pids.push(response[0].child.pid);
     console.log('response:::::::', response);
 
-    return response[1];
+    return;
   } catch (e) {
     fsNormal.writeFileSync(`${app.getPath('userData')}/error.log`, e.message);
   }

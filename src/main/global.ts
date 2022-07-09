@@ -33,7 +33,7 @@ export const shiftSocketData = (worker: string) => {
     console.log('!socketData[worker]', worker);
     socketData[worker] = [];
   }
-  // console.log('shiftSocketData', worker);
+  console.log('shiftSocketData', worker);
   return socketData[worker].shift();
 };
 

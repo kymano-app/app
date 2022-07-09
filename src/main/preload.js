@@ -20,6 +20,16 @@ contextBridge.exposeInMainWorld('electron', {
       'update-configs',
       'get-my-vms',
       'del-disks',
+      'change-vm-name',
+      'get-my-config-for-update',
+      'update-config-in-my-config',
+      'get-history-id-from-config',
+      'rollback-config-in-my-config',
+      'get-previous-id-from-config-history',
+      'get-config-history-by-id',
+      'get-config-by-id',
+      'get-latest-config-by-history-id',
+      'get-drives-names'
     ];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, ...params);
@@ -41,7 +51,7 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.send('ipc-example', 'ping');
     },
     on(channel, func) {
-      const validChannels = ['ipc-example', 'response-cmd'];
+      const validChannels = ['ipc-example', 'response-cmd', 'downloading-started', 'downloading', 'downloading-finished', 'downloading-error'];
       if (validChannels.includes(channel)) {
         // Deliberately strip event as it includes `sender`
         ipcRenderer.on(channel, (event, ...args) => func(...args));
